@@ -3,6 +3,8 @@ import apriltag
 import numpy
 import time
 
+from quaternions import matrixToQuat
+
 capture = cv2.VideoCapture(2)
 
 # Setup detector
@@ -103,7 +105,7 @@ while True:
 
 		pose, e0, e1 = detector.detection_pose(r, camera_params)
 		
-		print(pose)
+		print(matrixToQuat(pose))
 
 		_draw_pose(image,
 				camera_params,
