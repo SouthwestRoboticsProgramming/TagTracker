@@ -68,8 +68,6 @@ def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
     for i, j in edges:
         cv2.line(overlay, ipoints[i], ipoints[j], (0, 255, 0), 1, 16)
 
-    
-
 while True:
 	tic = time.perf_counter();
 	# Collect frame and convert to grayscale
@@ -104,8 +102,15 @@ while True:
 		#print("[INFO] tag family: {}".format(tagFamily))
 
 		pose, e0, e1 = detector.detection_pose(r, camera_params)
-		
-		print(matrixToQuat(pose))
+
+                # Camera position
+                position = (pose[0][3], pose[1][3], pose[2][3])
+
+                # Camera orientation vectors
+                quat = matrixToQuat(pose)
+                forwardUpLeft = quatToFUL(quat)
+                
+                # TODO-Mason: Do something better with this data
 
 		_draw_pose(image,
 				camera_params,
