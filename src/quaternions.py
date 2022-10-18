@@ -29,3 +29,18 @@ def matrixToQuat(m):
 
     return (q0, q1, q2, q3)
 
+def invertQuat(q):
+    return (q[0], -q[1], -q[2], -q[3])
+
+def quatToAxisAngle(q):
+    if q[0] == 1:
+        return (0, (1, 0, 0))
+
+    theta = 2 * math.acos(q[0])
+
+    s = math.sin(theta / 2)
+    x = q[1] / s
+    y = q[2] / s
+    z = q[3] / s
+
+    return (theta, (x, y, z))
