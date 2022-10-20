@@ -132,8 +132,6 @@ def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
     for i, j in edges:
         cv2.line(overlay, ipoints[i], ipoints[j], (0, 255, 0), 1, 16)
 
-    
-
 while True:
 
 	ret, image = capture.read()
