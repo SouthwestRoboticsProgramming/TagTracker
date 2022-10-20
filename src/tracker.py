@@ -3,12 +3,20 @@ import apriltag
 import numpy
 import time
 import logging
-import collections
+import argparse
 
 from quaternions import *
 
 
-capture = cv2.VideoCapture(2)
+# Parse arguments for settings
+parser = argparse.ArgumentParser(prog='AprilTag tracker',
+			description='Star AprilTag tracker for FRC')
+# TODO: Multiple cameras
+parser.add_argument('-c', '--camera', default=0, type=int, metavar='Camera ID', help='OpenCV Camera ID')
+
+args = parser.parse_args()
+
+capture = cv2.VideoCapture(args.camera)
 
 # Setup detector
 options = apriltag.DetectorOptions(families="tag36h11",
