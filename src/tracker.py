@@ -2,8 +2,11 @@ import cv2
 import apriltag
 import numpy
 import time
+import logging
+import collections
 
-from quaternions import matrixToQuat
+from quaternions import *
+
 
 capture = cv2.VideoCapture(2)
 
@@ -12,6 +15,8 @@ options = apriltag.DetectorOptions(families="tag36h11",
 					nthreads=8,
 					quad_decimate=1.0,
 					quad_blur=1.0)
+
+options.tag_size = 1
 detector = apriltag.Detector(options)
 
 # fx, fy, cx, cy = (439.728624791082, 414.9782292326142, 401.53713338042627, 211.2873582752417)
@@ -19,7 +24,66 @@ fx, fy, cx, cy = (1070.6915287567535, 1067.0306009135409, 323.3232144492538, 323
 
 camera_params = (fx, fy, cx, cy)
 
+def detect_tag(image):
 
+	# List of all of the tag positions
+	all_tags = []
+
+	# Convert image to grayscale
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+	# Find basic information about tag (center location, tag family...)
+	results = detector.detect(gray)
+
+	logging.debug('%s AprilTags detected', len(results))
+
+	# Loop over the AprilTag detection results
+	for r in results:
+		# Extract the bounding box (x, y)-coordinates for the AprilTag
+		# and convert each of the (x, y)-coordinate pairs to integers
+		(ptA, ptB, ptC, ptD) = r.corners
+		ptB = (int(ptB[0]), int(ptB[1]))
+		ptC = (int(ptC[0]), int(ptC[1]))
+		ptD = (int(ptD[0]), int(ptD[1]))
+		ptA = (int(ptA[0]), int(ptA[1]))
+
+		# Find the center (x, y)-coordinates of the AprilTag
+		(cX, cY) = (int(r.center[0]), int(r.center[1]))
+
+		# draw the tag family on the image
+		tag_family = r.tag_family.decode("utf-8")
+
+		# Extract pose using camera parameters
+		pose, e0, e1 = detector.detection_pose(r, camera_params)
+
+		# Scale position vectors by tag size
+		# TODO: Check that this is correct
+		pose[0][3] *= options.tag_size
+		pose[1][3] *= options.tag_size
+		pose[2][3] *= options.tag_size
+
+		# Extract pose (x, y, z)-coodinates into indevidual variables
+		x = pose[0][3]
+		y = pose[1][3]
+		z = pose[2][3]
+
+		# Convert transform matrix to quaternion (fancy angle)
+		quaternion = matrixToQuat(pose)
+		# Quaternions can be converted into pitch, yaw, roll using quatToAxisAngle()
+
+		tag_info = {
+			'pose' : (x, y, z),
+			'quaternion' : quaternion,
+			'center' : (cx, cy),
+			'corners' : (ptA, ptB, ptC, ptD),
+			'tag_family' : tag_family,
+			'raw_pose' : pose
+		}
+
+		all_tags.append(tag_info)
+		
+
+	return all_tags
 
 
 def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
@@ -71,56 +135,20 @@ def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
     
 
 while True:
-	tic = time.perf_counter();
-	# Collect frame and convert to grayscale
+
 	ret, image = capture.read()
-	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-	results = detector.detect(gray)
+	detections = detect_tag(image)
 
-	print("[INFO] {} total AprilTags detected".format(len(results)))
-
-	# loop over the AprilTag detection results
-	for r in results:
-		# extract the bounding box (x, y)-coordinates for the AprilTag
-		# and convert each of the (x, y)-coordinate pairs to integers
-		(ptA, ptB, ptC, ptD) = r.corners
-		ptB = (int(ptB[0]), int(ptB[1]))
-		ptC = (int(ptC[0]), int(ptC[1]))
-		ptD = (int(ptD[0]), int(ptD[1]))
-		ptA = (int(ptA[0]), int(ptA[1]))
-		# draw the bounding box of the AprilTag detection
-		cv2.line(image, ptA, ptB, (0, 255, 0), 2)
-		cv2.line(image, ptB, ptC, (0, 255, 0), 2)
-		cv2.line(image, ptC, ptD, (0, 255, 0), 2)
-		cv2.line(image, ptD, ptA, (0, 255, 0), 2)
-		# draw the center (x, y)-coordinates of the AprilTag
-		(cX, cY) = (int(r.center[0]), int(r.center[1]))
-		cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
-		# draw the tag family on the image
-		tagFamily = r.tag_family.decode("utf-8")
-		cv2.putText(image, tagFamily, (ptA[0], ptA[1] - 15),
-		cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-		#print("[INFO] tag family: {}".format(tagFamily))
-
-		pose, e0, e1 = detector.detection_pose(r, camera_params)
-		
-		print(matrixToQuat(pose))
-
-		_draw_pose(image,
-				camera_params,
-				0.75,
-				pose)
-
+	for detection in detections:
+		# print(detections.raw_pose)
+		_draw_pose(image, camera_params, 1.0, detection['raw_pose'])
 	cv2.imshow("Image", image)
 
-	toc = time.perf_counter();
-	print(f"FPS: {1 / (toc-tic):0.4f} ");
 
 	# Q to stop the program
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
-
 
 capture.release()
 cv2.destroyAllWindows()
