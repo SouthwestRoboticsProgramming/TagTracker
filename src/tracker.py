@@ -19,17 +19,13 @@ logger = logging.getLogger()
 # Parse arguments for settings
 parser = argparse.ArgumentParser(prog='AprilTag tracker',
 			description='Star AprilTag tracker for FRC')
-# TODO: Multiple cameras
 parser.add_argument('-c', '--camera', default=0, type=int, metavar='Camera ID', help='OpenCV Camera ID')
-parser.add_argument('-p', '--params', help='Camera parameters in JSON format')
+parser.add_argument('-cp', '--camera_params', help='Camera parameters in JSON format')
 
 args = parser.parse_args()
 
 capture = cv2.VideoCapture(args.camera)
 
-json_file = open(args.params, 'r')
-camera_params = json.load(json_file)
-json_file.close()
 
 # Setup detector
 options = apriltag.DetectorOptions(families="tag36h11",
@@ -40,15 +36,18 @@ options = apriltag.DetectorOptions(families="tag36h11",
 options.tag_size = 1
 detector = apriltag.Detector(options)
 
-# fx, fy, cx, cy = (439.728624791082, 414.9782292326142, 401.53713338042627, 211.2873582752417)
-# fx, fy, cx, cy = (1070.6915287567535, 1067.0306009135409, 323.3232144492538, 323.54374730910564)
-fx, fy, cx, cy = (camera_params['fx'],
-				camera_params['fy'],
-				camera_params['cx'],
-				camera_params['cy'])
-print(fx)
+try:
+	json_file = open(args.camera_params, 'r')
+	camera_params = json.load(json_file)
+	json_file.close()
 
-camera_params = (fx, fy, cx, cy)
+	fx, fy, cx, cy = (camera_params['fx'],
+					camera_params['fy'],
+					camera_params['cx'],
+					camera_params['cy'])
+	camera_params = (fx, fy, cx, cy)
+except:
+	pass
 
 def detect_tag(image):
 
