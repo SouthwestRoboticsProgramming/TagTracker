@@ -7,6 +7,7 @@ import argparse
 import json
 
 from quaternions import *
+from solver import *
 
 # Configure logging
 LOG_FORMAT = '%(levelname)s %(asctime)s - %(message)s'
@@ -21,6 +22,7 @@ parser = argparse.ArgumentParser(prog='AprilTag tracker',
 			description='Star AprilTag tracker for FRC')
 parser.add_argument('-c', '--camera', default=0, type=int, metavar='Camera ID', help='OpenCV Camera ID')
 parser.add_argument('-cp', '--camera_params', help='Camera parameters in JSON format')
+parser.add_argument('-ti', '--tag_info', help='Tag information in JSON format')
 
 args = parser.parse_args()
 
@@ -48,6 +50,28 @@ try:
 	camera_params = (fx, fy, cx, cy)
 except:
 	pass
+
+solver = None
+# try:
+for i in range(1):
+	json_file = open(args.tag_info, 'r')
+	tag_info = json.load(json_file)
+	json_file.close()
+
+	tag_poses = []
+	for info in tag_info:
+		pos = info['pos']
+		rot = info['rot']
+		tag_poses.append(TagPose(
+			info['id'],
+			(pos[0], pos[1], pos[2]),
+			(rot[0], rot[1], rot[2], rot[3])
+		))
+
+	solver = RobotPoseSolver(tag_poses, None)
+# except Exception as e:
+# 	print(e)
+# 	pass
 
 def detect_tag(image):
 
@@ -113,49 +137,49 @@ def detect_tag(image):
 
 def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
 
-    opoints = numpy.array([
-        -1, -1, 0,
-         1, -1, 0,
-         1,  1, 0,
-        -1,  1, 0,
-        -1, -1, -2*z_sign,
-         1, -1, -2*z_sign,
-         1,  1, -2*z_sign,
-        -1,  1, -2*z_sign,
-    ]).reshape(-1, 1, 3) * 0.5*tag_size
+	opoints = numpy.array([
+		-1, -1, 0,
+		 1, -1, 0,
+		 1,  1, 0,
+		-1,  1, 0,
+		-1, -1, -2*z_sign,
+		 1, -1, -2*z_sign,
+		 1,  1, -2*z_sign,
+		-1,  1, -2*z_sign,
+	]).reshape(-1, 1, 3) * 0.5*tag_size
 
-    edges = numpy.array([
-        0, 1,
-        1, 2,
-        2, 3,
-        3, 0,
-        0, 4,
-        1, 5,
-        2, 6,
-        3, 7,
-        4, 5,
-        5, 6,
-        6, 7,
-        7, 4
-    ]).reshape(-1, 2)
-        
-    fx, fy, cx, cy = camera_params
+	edges = numpy.array([
+		0, 1,
+		1, 2,
+		2, 3,
+		3, 0,
+		0, 4,
+		1, 5,
+		2, 6,
+		3, 7,
+		4, 5,
+		5, 6,
+		6, 7,
+		7, 4
+	]).reshape(-1, 2)
+		
+	fx, fy, cx, cy = camera_params
 
-    K = numpy.array([fx, 0, cx, 0, fy, cy, 0, 0, 1]).reshape(3, 3)
+	K = numpy.array([fx, 0, cx, 0, fy, cy, 0, 0, 1]).reshape(3, 3)
 
-    rvec, _ = cv2.Rodrigues(pose[:3,:3])
-    tvec = pose[:3, 3]
+	rvec, _ = cv2.Rodrigues(pose[:3,:3])
+	tvec = pose[:3, 3]
 
-    dcoeffs = numpy.zeros(5)
+	dcoeffs = numpy.zeros(5)
 
-    ipoints, _ = cv2.projectPoints(opoints, rvec, tvec, K, dcoeffs)
+	ipoints, _ = cv2.projectPoints(opoints, rvec, tvec, K, dcoeffs)
 
-    ipoints = numpy.round(ipoints).astype(int)
-    
-    ipoints = [tuple(pt) for pt in ipoints.reshape(-1, 2)]
+	ipoints = numpy.round(ipoints).astype(int)
+	
+	ipoints = [tuple(pt) for pt in ipoints.reshape(-1, 2)]
 
-    for i, j in edges:
-        cv2.line(overlay, ipoints[i], ipoints[j], (0, 255, 0), 1, 16)
+	for i, j in edges:
+		cv2.line(overlay, ipoints[i], ipoints[j], (0, 255, 0), 1, 16)
 
 while True:
 
@@ -166,6 +190,11 @@ while True:
 	for detection in detections:
 		# print(detections.raw_pose)
 		_draw_pose(image, camera_params, 1.0, detection['raw_pose'])
+	
+	robot_pose = solver.solve(detections)
+	if robot_pose is not None:
+		print(robot_pose.position, robot_pose.rotation_q)
+
 	cv2.imshow("Image", image)
 
 
