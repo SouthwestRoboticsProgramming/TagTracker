@@ -1,0 +1,11 @@
+{
+    "cameras" : [
+
+
+        {
+            "name" : "Laptop webcam",
+            "type" : "Logitech_Webcam",
+            "port" : 2
+        }
+    ]
+}

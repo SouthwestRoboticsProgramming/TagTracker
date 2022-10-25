@@ -1,0 +1,14 @@
+{
+    "families" : "tag36h11",
+    "border" : 1,
+    "nthreads" : 4,
+    "quad_decimate" : 1,
+    "quad_blur" : 0,
+    "quad_sigma" : 1,
+    "refine_edges" : true,
+    "refine_decode" : false,
+    "refine_pose" : false,
+    "debug" : false,
+    "quad_contours" : true,
+    "tag_size" : 1
+}
