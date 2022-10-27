@@ -14,13 +14,19 @@ class Detector: # Rename?
         options = _DetectorOptions(options)
         self.detector = apriltag.Detector(options)
 
-    def getPoses(self, images, params):
+    def getPoses(self, images_and_cameras):
 
         # Make a list of estimated poses to add to
         estimated_poses = []
 
         # Find every target in the images
-        for image in images:
+        for image in images_and_cameras:
+            # Extract parameters
+            params = image[1].camera_params
+
+            # Extract image
+            image = image[0]
+
             # Convert image to grayscale
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -28,13 +34,13 @@ class Detector: # Rename?
             results = self.detector.detect(gray)
 
             # Estimate the pose of the camera relative to each target
-            for result in enumerate(results):
+            for i, result in enumerate(results):
                 # Draw bounding box
-                drawBoundingBox(image, result[1])
+                drawBoundingBox(image, result)
 
-                pose, e0, e1 = self.detector.detection_pose(result[1], params[result[0]]) # TODO: Tag size
+                pose, e0, e1 = self.detector.detection_pose(result, params[i]) # TODO: Tag size
                 # TODO Finish
-                # TODO: What are the 'e'?
+                # TODO: What are the 'e's?
                 estimated_poses.append(pose)
 
             # Log number of tags found

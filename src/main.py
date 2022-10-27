@@ -97,15 +97,14 @@ def main():
 
     # Main loop, run all the time like limelight
     while True:
-        images = camera_array.getImages()
-        params = camera_array.getParams()
+        data = camera_array.read_cameras()
 
-        detection_poses = detector.getPoses(images, params)
+        detection_poses = detector.getPoses(data)
 
-        position = solver.getPosition(detection_poses)
+        # position = solver.getPosition(detection_poses)
 
-        for image in enumerate(images):
-            cv2.imshow(str(image[0]), image[1])
+        for i, image in enumerate(data):
+            cv2.imshow(str(i), image[0])
 
         # Send the solved position back to robot
         # TODO
