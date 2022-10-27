@@ -22,7 +22,7 @@ class Camera:
 
         self.capture = cv2.VideoCapture(camera_port)
         self.camera_params = params
-        
+        self.camera_info = camera_options
 
     def getImage(self, return_list=None, return_index=None):
         ret, frame = self.capture.read()
@@ -66,7 +66,10 @@ class CameraArray: # Multithread frame captures
                 images.pop(index)
                 logger.error("{} failed to capture an image".format(self.camera[index].name))
             else: # Otherwise, remove the ret and leave just the image
-                images[index] = images[index][1] # Remove ret
+                images[index] = {
+                    'image': images[index][1], # Remove ret
+                    'camera': self.cameras[index].camera_info
+                }
 
         return images
 

@@ -109,10 +109,12 @@ def main():
         position = solver.getPosition(detection_poses)
 
         for image in enumerate(images):
-            cv2.imshow(str(image[0]), image[1])
+            cv2.imshow(str(image[0]), image[1]['image'])
 
         # Send the solved position back to robot
         # TODO
+
+        api.publish_detection_data(detection_poses)
 
         # Read incoming API messages
         api.read()

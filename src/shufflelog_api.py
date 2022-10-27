@@ -28,6 +28,16 @@ class ShuffleLogAPI:
     def shutdown(self):
         self.msg.disconnect()
 
+    # This is temporary
+    def publish_detection_data(self, detections):
+        builder = self.msg.prepare('TagTracker:TestData')
+        builder.add_int(len(detections))
+        for detect in detections:
+            _write_matrix(builder, detect['pose'])
+            _write_matrix(builder, detect['camera']['robot_pose'])
+            builder.add_int(detect['tag_id'])
+        builder.send()
+
     def _on_query_environment(self, type, reader):
         print('[debug] sending environment data to ShuffleLog')
         builder = self.msg.prepare(ShuffleLogAPI._MSG_ENVIRONMENT)
