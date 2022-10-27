@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 import argparse
 
+# Copied from AprilTag library source code
+# and edited to work with live video stream
 def main():
 
     parser = argparse.ArgumentParser(
