@@ -42,7 +42,7 @@ class Detector: # Rename?
                 estimated_poses.append({
                     'pose': pose,
                     'camera': image_dict['camera'],
-                    'tag_id': result[1].tag_id
+                    'tag_id': result.tag_id
                 })
 
             # Log number of tags found
