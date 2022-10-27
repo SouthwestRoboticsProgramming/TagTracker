@@ -105,7 +105,7 @@ def main():
 
         detection_poses = detector.getPoses(data)
 
-        position = solver.getPosition(detection_poses)
+        position = solver.solve(detection_poses)
 
         print(position)
 
