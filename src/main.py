@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from networktables import NetworkTables
 from tag_tracker import *
-from loc import *
+from solver import *
 from shufflelog_api import ShuffleLogAPI
 import logging
 import threading
@@ -86,7 +86,7 @@ def main():
     
     # Create a solver to filter estimated positions
     # and localize robot
-    solver = Localization()
+    solver = RobotPoseSolver(environment)
 
     # Create an entry to send data back
     solved_position = todo_table_name.getEntry("solved_position")
@@ -106,6 +106,8 @@ def main():
         detection_poses = detector.getPoses(data)
 
         position = solver.getPosition(detection_poses)
+
+        print(position)
 
         for i, image in enumerate(data):
             cv2.imshow(str(i), image['image'])
