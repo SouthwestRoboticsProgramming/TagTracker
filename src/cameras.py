@@ -75,8 +75,10 @@ class CameraArray: # Multithread frame captures
                 images.pop(i)
                 logger.error("{} failed to capture an image".format(camera.name))
             else: # Otherwise, remove the ret and leave just the image
-                images[i][0] = frame # Remove ret but leave camera info
-
+                images[i] = {
+                    'image' : frame, # Remove  ret
+                    'camera' : camera.camera_params
+                }
         return images
 
     def getParams(self):

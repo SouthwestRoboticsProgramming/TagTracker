@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from networktables import NetworkTables
 from tag_tracker import *
 from loc import *
+# from shufflelog_api import ShuffleLogAPI
 import logging
 import threading
 import json
@@ -39,12 +40,8 @@ def main():
     else:
         NetworkTables.initialize() # TODO: Start a new server?
 
-
     # Tables to send back to RoboRIO and driver station
     todo_table_name = NetworkTables.getTable("TODO") # TODO: Give it a name
-
-
-
 
     # Extract environment JSON
     try:
@@ -94,6 +91,13 @@ def main():
     # Create an entry to send data back
     solved_position = todo_table_name.getEntry("solved_position")
 
+    # Initialize ShuffleLog API
+    messenger_params = {
+        'host': 'localhost',
+        'port': 5805,
+        'name': 'TagTracker'
+    }
+    # api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
 
     # Main loop, run all the time like limelight
     while True:
@@ -104,14 +108,22 @@ def main():
         # position = solver.getPosition(detection_poses)
 
         for i, image in enumerate(data):
-            cv2.imshow(str(i), image[0])
+            cv2.imshow(str(i), image['image'])
 
         # Send the solved position back to robot
         # TODO
 
-        	# Q to stop the program
+        # api.publish_detection_data(detection_poses)
+
+        # Read incoming API messages
+        # api.read()
+
+        # Q to stop the program
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            break    
+            break  
+
+    # Disconnect from Messenger
+    # api.shutdown()  
 
 if __name__ == '__main__':
     main()
