@@ -8,6 +8,7 @@ class Camera:
         # Extract indevidual values
         camera_port = camera_options['port']
         self.name = camera_options['name']
+        self.robot_position = camera_options['robot_pose']
 
         # Extract params JSON
         try:
@@ -77,7 +78,7 @@ class CameraArray: # Multithread frame captures
             else: # Otherwise, remove the ret and leave just the image
                 images[i] = {
                     'image' : frame, # Remove  ret
-                    'camera' : camera.camera_params
+                    'camera' : camera
                 }
         return images
 

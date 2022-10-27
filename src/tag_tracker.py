@@ -22,7 +22,7 @@ class Detector: # Rename?
         # Find every target in the images
         for image_dict in images:
             image = image_dict['image']
-            params = image_dict['camera']
+            camera = image_dict['camera']
 
             # Convert image to grayscale
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -35,13 +35,13 @@ class Detector: # Rename?
                 # Draw bounding box
                 drawBoundingBox(image, result)
 
-                pose, e0, e1 = self.detector.detection_pose(result, params) # TODO: Tag size
+                pose, e0, e1 = self.detector.detection_pose(result, camera.camera_params) # TODO: Tag size
                 # TODO Finish
                 # TODO: What are the 'e's?
                 # TODO: Scale pose by tag size
                 estimated_poses.append({
                     'pose': pose,
-                    'camera': image_dict['camera'],
+                    'camera': camera,
                     'tag_id': result.tag_id
                 })
 

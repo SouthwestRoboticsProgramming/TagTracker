@@ -34,7 +34,7 @@ class ShuffleLogAPI:
         builder.add_int(len(detections))
         for detect in detections:
             _write_matrix(builder, detect['pose'])
-            _write_matrix(builder, detect['camera']['robot_pose'])
+            _write_matrix(builder, detect['camera'].robot_position)
             builder.add_int(detect['tag_id'])
         builder.send()
 

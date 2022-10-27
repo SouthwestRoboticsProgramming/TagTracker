@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from networktables import NetworkTables
 from tag_tracker import *
 from loc import *
-# from shufflelog_api import ShuffleLogAPI
+from shufflelog_api import ShuffleLogAPI
 import logging
 import threading
 import json
@@ -97,7 +97,7 @@ def main():
         'port': 5805,
         'name': 'TagTracker'
     }
-    # api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
+    api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
 
     # Main loop, run all the time like limelight
     while True:
@@ -105,7 +105,7 @@ def main():
 
         detection_poses = detector.getPoses(data)
 
-        # position = solver.getPosition(detection_poses)
+        position = solver.getPosition(detection_poses)
 
         for i, image in enumerate(data):
             cv2.imshow(str(i), image['image'])
@@ -113,17 +113,17 @@ def main():
         # Send the solved position back to robot
         # TODO
 
-        # api.publish_detection_data(detection_poses)
+        api.publish_detection_data(detection_poses)
 
         # Read incoming API messages
-        # api.read()
+        api.read()
 
         # Q to stop the program
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break  
 
     # Disconnect from Messenger
-    # api.shutdown()  
+    api.shutdown()  
 
 if __name__ == '__main__':
     main()
