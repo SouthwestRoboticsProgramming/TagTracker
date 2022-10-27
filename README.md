@@ -12,10 +12,11 @@ This is a python script to track the new Apriltags posted on the FRC field.
 3. **Install python dependencies**:
 * Install opencv through the command `pip install opencv-contrib-python`. This works for both windows and linux.
 * Install apriltag through the command `pip install apriltag`. This works for both windows and linux.
+* Intstall networktables through the command `pip install pynetworktables`. This owrks for both windows and linux.
 
 ## Setup
 
-1. **Print out chessboad for camera calibration**. I found sucess with the one in the `images` directory.
+1. **Print out chessboad for camera calibration**. We found sucess with the one in the `images` directory.
 2. **Run the script `calibrate_camera.py`** with flags for columns, rows, square size, and camera ID. <br>
 90% of the time, the camera ID is 0, if not, try IDs 0-10. <br>
 Once you get the script to run, hold the camera so that it can see the entirety of the chessboard. Once you get messages in the terminal telling you that it has aquired the chessboard, you can hit the 'q' button to quit. Results from the calibration will be printed in the terminal.
