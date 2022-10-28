@@ -52,29 +52,31 @@ class RobotPoseSolver:
 
             tag_pose = tag_dict['transform']
 
-            print(tag_dict['size'])
-
             # Convert to numpy arrarys for math
             estimated_pose = np.array(estimated_pose)
             camera_pose = np.array(camera_pose)
             tag_pose = np.array(tag_pose)
 
             # Take into account pose of the camera and tag
-            without_camera = np.subtract(estimated_pose, tag_pose)
-            final_pose = np.subtract(without_camera, camera_pose)
+            apply_camera = np.linalg.inv(tag_pose)
+            apply_tag = np.linalg.inv(camera_pose)
+
+            with_camera = np.dot(estimated_pose, apply_camera)
+            with_tag = np.dot(with_camera, apply_tag)
             # TODO: Test with rotation
-            
+
+            # Split into x, y, z
+            final_pose = np.array([-with_tag[0][3], # X has to be inverted
+                                    with_tag[1][3],
+                                    with_tag[2][3]])
+
             estimated_poses_list.append(final_pose)
 
 
-        # Combine poses with average (at least for now)
+        # Combine poses with average (just for position, not rotation)
         
         total = sum(estimated_poses_list)
         average = total / len(estimated_poses_list)
 
-        print(average)
-
-
-
-        return (0, 0, 0)
+        return average
     
