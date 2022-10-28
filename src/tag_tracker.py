@@ -42,7 +42,8 @@ class Detector: # Rename?
                 estimated_poses.append({
                     'pose': pose,
                     'camera': camera,
-                    'tag_id': result.tag_id
+                    'tag_id': result.tag_id,
+                    'tag_family' : result.tag_family
                 })
 
             # Log number of tags found
