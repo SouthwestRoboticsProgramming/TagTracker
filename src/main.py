@@ -105,7 +105,7 @@ def main():
 
         detection_poses = detector.getPoses(data)
 
-        position = solver.solve(detection_poses)
+        position, matrices = solver.solve(detection_poses)
 
         print(position)
 
@@ -115,7 +115,7 @@ def main():
         # Send the solved position back to robot
         # TODO
 
-        api.publish_detection_data(detection_poses)
+        api.publish_test_matrices(matrices)
 
         # Read incoming API messages
         api.read()

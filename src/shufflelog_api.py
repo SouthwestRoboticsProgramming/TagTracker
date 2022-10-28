@@ -38,6 +38,13 @@ class ShuffleLogAPI:
             builder.add_int(detect['tag_id'])
         builder.send()
 
+    def publish_test_matrices(self, matrices):
+        builder = self.msg.prepare('TagTracker:TestMtx')
+        builder.add_int(len(matrices))
+        for matrix in matrices:
+            _write_matrix(builder, matrix)
+        builder.send()
+
     def _on_query_environment(self, type, reader):
         print('[debug] sending environment data to ShuffleLog')
         builder = self.msg.prepare(ShuffleLogAPI._MSG_ENVIRONMENT)

@@ -3,7 +3,7 @@ import numpy as np
 
 DRAW_GUI = True
 
-def draw_bounding_box(overlay, detector_result):
+def draw_bounding_box(overlay, detector_result, camera_params, pose):
     # Copied from AprilTag source
 
     # Extract the bounding box (x, y)-coordinates for the AprilTag
@@ -33,6 +33,8 @@ def draw_bounding_box(overlay, detector_result):
     tagId = str(detector_result.tag_id)
     cv2.putText(overlay, tagId, ((cX, cY)),
     cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 2)
+
+    draw_cube(overlay, camera_params, 1, pose)
 
 # Not done TODO: Finish
 def draw_cube(overlay, camera_params, tag_size, pose, z_sign=1):

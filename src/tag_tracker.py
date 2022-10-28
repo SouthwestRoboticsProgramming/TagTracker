@@ -32,10 +32,11 @@ class Detector: # Rename?
 
             # Estimate the pose of the camera relative to each target
             for i, result in enumerate(results):
-                # Draw bounding box
-                drawBoundingBox(image, result)
+                pose, e0, e1 = self.detector.detection_pose(result, camera.camera_params)
 
-                pose, e0, e1 = self.detector.detection_pose(result, camera.camera_params) # TODO: Tag size
+                # Draw bounding box
+                draw_bounding_box(image, result, camera.camera_params, pose)
+
                 # TODO Finish
                 # TODO: What are the 'e's?
                 # TODO: Scale pose by tag size
