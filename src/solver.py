@@ -69,13 +69,8 @@ class RobotPoseSolver:
 				 family {}. FRC uses 36h11'.format(self.tag_family))
 			'''
 	def solve(self, detection_poses):
-		# if not detection_poses:
-		#     return
-
 		# Master list of estimated poses to be combined
 		estimated_poses_list = []
-
-		test_matrices = []
 
 		# Apply camera and tag pose to estimated pose
 		for pose_dict in detection_poses:
@@ -90,7 +85,7 @@ class RobotPoseSolver:
 				break
 
 			# Get the info for the tag
-			tag_dict = self.tags_dict[tag_id]
+			tag_dict = self.tags_dict.get(tag_id)
 
 			if not tag_dict:
 				# TODO: Log warning
@@ -103,36 +98,33 @@ class RobotPoseSolver:
 			camera_pose = np.array(camera_pose)
 			tag_pose = np.array(tag_pose)
 
+			# Scale estimated position by tag size
 			size = tag_dict['size']
 			estimated_pose[0][3] *= size
-			estimated_pose[1][3] *= -size # TODO: Should this be negative?
+			estimated_pose[1][3] *= size
 			estimated_pose[2][3] *= size
-			test_matrices.append(estimated_pose)
 
-			# Take into account pose of the camera and tag
-			apply_camera = invert(tag_pose)
-			apply_tag = invert(camera_pose)
+			# Find where the camera is if the tag is at the origin
+			tag_relative_camera_pose = invert(estimated_pose)
 
-			with_camera = np.matmul(estimated_pose, apply_camera)
-			with_tag = np.matmul(with_camera, apply_tag)
-			# TODO: Test with rotation
+			# Find the camera position relative to the tag position
+			world_camera_pose = np.matmul(tag_pose, tag_relative_camera_pose)
 
-			# test_matrices.append(with_tag)
+			# Find the position of the robot from the camera position
+			inv_rel_camera_pose = invert(camera_pose)
+			robot_pose = np.matmul(world_camera_pose, inv_rel_camera_pose)
 
-			# Split into x, y, z
-			final_pose = np.array([-with_tag[0][3], # X has to be inverted
-									with_tag[1][3],
-									with_tag[2][3]])
-
-			estimated_poses_list.append(final_pose)
-
+			estimated_poses_list.append(robot_pose)
 
 		# Combine poses with average (just for position, not rotation)
-		
-		return ((0, 0, 0), test_matrices)
 
-		# total = sum(estimated_poses_list)
-		# average = total / len(estimated_poses_list)
-
-		# return average
+		if len(estimated_poses_list) != 0:
+			total = np.array([0.0, 0.0, 0.0])
+			for pose in estimated_poses_list:
+				total += np.array([pose[0][3], pose[1][3], pose[2][3]])
+			average = total / len(estimated_poses_list)
+			return (average, estimated_poses_list)
+		else:
+			# If we have no samples, report none
+			return (None, estimated_poses_list)
 	
