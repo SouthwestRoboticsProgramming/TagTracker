@@ -4,7 +4,6 @@ from tag_tracker import *
 from solver import *
 from shufflelog_api import ShuffleLogAPI
 import logging
-import threading
 import json
 
 # Get field data to improve logging
@@ -129,4 +128,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

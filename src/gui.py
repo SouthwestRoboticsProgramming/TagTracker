@@ -3,6 +3,7 @@ import numpy as np
 
 DRAW_GUI = True
 
+# TODO-Ryan: Don't draw pose too and just make it one function
 def draw_bounding_box(overlay, detector_result, camera_params, pose):
     # Copied from AprilTag source
 
