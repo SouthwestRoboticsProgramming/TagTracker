@@ -18,12 +18,6 @@ def main():
                         required=True,
                         help='# of chessboard corners in horizontal direction')
 
-    parser.add_argument('-s', '--size', metavar='NUM', type=float, default=1.0,
-                        help='chessboard square size in user-chosen units (should not affect results)')
-
-    parser.add_argument('-d', '--show-detections', action='store_true',
-                        help='show detections in window')
-
     parser.add_argument('-i', '--input_camera', type=int,
                     default=0, help='change which camera to reac from by openCV id')
 
@@ -36,10 +30,8 @@ def main():
 
     cam = options.input_camera
 
-    sz = options.size
-
-    x = np.arange(patternsize[0])*sz
-    y = np.arange(patternsize[1])*sz
+    x = np.arange(patternsize[0])
+    y = np.arange(patternsize[1])
 
     xgrid, ygrid = np.meshgrid(x, y)
     zgrid = np.zeros_like(xgrid)
@@ -50,6 +42,8 @@ def main():
     cap = cv2.VideoCapture(cam)
 
     ipoints = []
+
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     while True:
 
@@ -75,21 +69,19 @@ def main():
         
         retval, corners = cv2.findChessboardCorners(gray, patternsize, None)
 
-        if options.show_detections:
-            display = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-            cv2.drawChessboardCorners(display, patternsize, corners, retval)
-            cv2.imshow("Display", display)
-            while cv2.waitKey(5) not in range(128): pass
+        # Refine corners (apriltags devs forgot this)
+        if retval:
+            refined = cv2.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
+
+            cv2.drawChessboardCorners(rgb, patternsize, refined, retval)
 
         if not retval:
             # print('warning: no chessboard found, skipping')
             print('nothing found')
         else:
             print('checkerboard aquired!')
-            ipoints.append( corners )
-
-
-        cv2.imshow("RGB", rgb)
+            ipoints.append(refined)
+        cv2.imshow("Image", rgb)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

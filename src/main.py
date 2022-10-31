@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 from networktables import NetworkTables
+from shufflelog_api import ShuffleLogAPI
 from tag_tracker import *
 from solver import *
-from shufflelog_api import ShuffleLogAPI
 import logging
 import json
 
