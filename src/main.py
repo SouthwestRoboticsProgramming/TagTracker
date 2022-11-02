@@ -26,7 +26,7 @@ def main():
     # Create a parser to allow variable arguments
     parser = ArgumentParser(prog='AprilTag tracker',
                             description='AprilTag tracker for FRC')
-    parser.add_argument('-i', '--networktable_ip', type=str, default=None, metavar='', help='RoboRIO ip to access network tables')
+    parser.add_argument('-i', '--networktable_ip', type=str, default='localhost', metavar='', help='RoboRIO ip to access network tables')
     parser.add_argument('-e', '--environment', type=str, default='environment.json', metavar='', help='Path to environment definition JSON')
     parser.add_argument('-c', '--cameras', type=str, default='cameras.json', metavar='', help='Path to camera definition JSON')
     parser.add_argument('-d', '--detector', type=str, default='detector.json', metavar='', help='Path to detector definition JSON')
@@ -102,7 +102,6 @@ def main():
     # Main loop, run all the time like limelight
     while True:
         data = camera_array.read_cameras()
-
         detection_poses = detector.getPoses(data)
 
         position, matrices = solver.solve(detection_poses)
@@ -116,6 +115,8 @@ def main():
         # TODO
 
         api.publish_test_matrices(matrices)
+        if position is None: position = [0,0,0]
+        todo_table_name.putNumberArray('foo', position)
 
         # Read incoming API messages
         api.read()
