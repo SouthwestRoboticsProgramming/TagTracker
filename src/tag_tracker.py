@@ -32,6 +32,13 @@ class Detector: # Rename?
 
             # Estimate the pose of the camera relative to each target
             for i, result in enumerate(results):
+                # Undistort corners
+
+                # print(result.corners)
+                # for j in range(len(result.corners)):
+                #     result.corners[j] = cv2.undistortPoints(result.corners[j].reshape(-1, 2), camera.matrix, dist_coeffs, P=new_mtx).reshape(-1)
+                # print(result.corners)
+
                 pose, e0, e1 = self.detector.detection_pose(result, camera.camera_params)
 
                 # Draw bounding box

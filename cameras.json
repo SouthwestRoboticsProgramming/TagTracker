@@ -3,7 +3,7 @@
         
         {
             "name": "USB Webcam",
-            "type": "Logitech_Webcam",
+            "type": "Small_USB_Camera",
             "port": 2,
             "robot_pose": [
                 [1, 0, 0, 0.5],

@@ -1,5 +1,6 @@
 from threading import Thread
 import cv2
+import numpy as np
 import json
 from main import logger
 
@@ -22,8 +23,13 @@ class Camera:
         params_json.close()
 
         # Convert params to tuple
-        self.camera_params = tuple(params.values())
-
+        self.camera_params = (params['fx'], params['fy'], params['cx'], params['cy'])
+        self.distortion = params['dist']
+        self.matrix = np.array([
+            self.camera_params[0], 0, self.camera_params[2],
+            0, self.camera_params[1], self.camera_params[3],
+            0, 0, 1    
+        ]).reshape(3, 3)
 
         self.capture = cv2.VideoCapture(camera_port)
         
@@ -76,8 +82,16 @@ class CameraArray: # Multithread frame captures
                 images.pop(i)
                 logger.error("{} failed to capture an image".format(camera.name))
             else: # Otherwise, remove the ret and leave just the image
+                height, width = frame.shape[:2]
+                dist_coeffs = np.array(camera.distortion)
+                new_mtx, roi = cv2.getOptimalNewCameraMatrix(camera.matrix, dist_coeffs, (width, height), 1, (width, height))
+
+                undistorted = cv2.undistort(frame, camera.matrix, dist_coeffs, None, camera.matrix)
+                crop_x, crop_y, crop_w, crop_h = roi
+                undistorted = undistorted[crop_y:crop_y+crop_h, crop_x:crop_x+crop_w]
+
                 images[i] = {
-                    'image' : frame, # Remove  ret
+                    'image' : undistorted, # Remove  ret
                     'camera' : camera
                 }
         return images

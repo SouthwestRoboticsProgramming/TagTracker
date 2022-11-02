@@ -9,6 +9,5 @@
     "refine_decode" : false,
     "refine_pose" : false,
     "debug" : false,
-    "quad_contours" : true,
-    "tag_size" : 1
+    "quad_contours" : true
 }

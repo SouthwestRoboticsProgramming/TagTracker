@@ -53,20 +53,24 @@ def main():
             print('warning: error getting data from webcam, ending')
             break
 
-        cursize = (rgb.shape[1], rgb.shape[0])
+        # cursize = (rgb.shape[1], rgb.shape[0])
+        # print(cursize, rgb.shape[::-1])
         
-        if imagesize is None:
-            imagesize = cursize
-        else:
-            assert imagesize == cursize
 
-        print('Received frame of size {}x{}'.format(*imagesize))
+        #print('Received frame of size {}x{}'.format(*imagesize))
 
         if len(rgb.shape) == 3:
             gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
         else:
             gray = rgb
         
+        cursize = gray.shape[::-1]
+
+        if imagesize is None:
+            imagesize = cursize
+        else:
+            assert imagesize == cursize
+
         retval, corners = cv2.findChessboardCorners(gray, patternsize, None)
 
         # Refine corners (apriltags devs forgot this)
@@ -86,22 +90,11 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    flags = (cv2.CALIB_ZERO_TANGENT_DIST |
-             cv2.CALIB_FIX_K1 |
-             cv2.CALIB_FIX_K2 |
-             cv2.CALIB_FIX_K3 |
-             cv2.CALIB_FIX_K4 |
-             cv2.CALIB_FIX_K5 |
-             cv2.CALIB_FIX_K6)
-
     opoints = [opoints] * len(ipoints)
 
-    retval, K, dcoeffs, rvecs, tvecs = cv2.calibrateCamera(opoints, ipoints, imagesize,
-                                                           cameraMatrix=None,
-                                                           distCoeffs=np.zeros(5),
-                                                           flags=flags)
+    retval, K, dcoeffs, rvecs, tvecs = cv2.calibrateCamera(opoints, ipoints, imagesize, None, None)
 
-    assert( np.all(dcoeffs == 0) )
+    #assert( np.all(dcoeffs == 0) )
     
     fx = K[0,0]
     fy = K[1,1]
@@ -120,6 +113,14 @@ def main():
     print('pastable into Python:')
     print('  fx, fy, cx, cy = {}'.format(repr(params)))
     print()
+    print('json:')
+    print('{')
+    print('  "fx": {},'.format(K[0,0]))
+    print('  "fy": {},'.format(K[1,1]))
+    print('  "cx": {},'.format(K[0,2]))
+    print('  "cy": {},'.format(K[1,2]))
+    print('  "dist": [{}]'.format(', '.join([str(n) for n in dcoeffs])))
+    print('}')
 
     cv2.destroyAllWindows()
 
