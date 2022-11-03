@@ -1,1 +1,6 @@
-Lorem Ipsum
+---
+layout: default
+title: Home
+---
+
+Hello world
