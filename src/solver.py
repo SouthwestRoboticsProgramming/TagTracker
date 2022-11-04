@@ -1,7 +1,6 @@
 # Solves for robot position based on results of found tags
-# from main import logger
-# TODO: Make logging work
 import numpy as np
+from main import logger
 
 # TODO-Ryan: Finish/Fix
 
@@ -56,7 +55,7 @@ class RobotPoseSolver:
 	def __init__(self, environment_dict):
 		# Unpack tag positions into lookup dictionary
 		if not environment_dict['tags']:
-			# logger.error('No tags defined! Quitting')
+			logger.error('No tags defined! Quitting')
 			raise Exception('No tags defined in environment JSON')
 		self.tags_dict = {}
 		for tag in environment_dict['tags']:
@@ -66,7 +65,7 @@ class RobotPoseSolver:
 
 		if self.tag_family != "36h11":
 			'''logger.warning('Are you sure that you want to look for, tags in the \
-				 family {}. FRC uses 36h11'.format(self.tag_family))
+				family {}. FRC uses 36h11'.format(self.tag_family))
 			'''
 	def solve(self, detection_poses):
 		# Master list of estimated poses to be combined
@@ -81,14 +80,14 @@ class RobotPoseSolver:
 
 			# Find the tag info that matches that tag
 			if not (self.tag_family in str(tag_family)):
-				# TODO: Log warning
+				logger.warning("Found a tag that doesn't belong to {}".format(self.tag_family))
 				break
 
 			# Get the info for the tag
 			tag_dict = self.tags_dict.get(tag_id)
 
 			if not tag_dict:
-				# TODO: Log warning
+				logger.warning("Found a tag that isn't defined in environment. ID: {}".format(tag_id))
 				break
 
 			tag_pose = tag_dict['transform']
@@ -128,4 +127,3 @@ class RobotPoseSolver:
 		else:
 			# If we have no samples, report none
 			return (None, estimated_poses_list)
-	
