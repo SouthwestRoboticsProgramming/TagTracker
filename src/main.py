@@ -33,6 +33,7 @@ def main():
     parser.add_argument('-e', '--environment', type=str, default='environment.json', metavar='', help='Path to environment definition JSON')
     parser.add_argument('-c', '--cameras', type=str, default='cameras.json', metavar='', help='Path to camera definition JSON')
     parser.add_argument('-d', '--detector', type=str, default='detector.json', metavar='', help='Path to detector definition JSON')
+    parser.add_argument('-n', '--no_gui',  action='store_true', help='Hide OpenCV gui.')
 
     args = parser.parse_args()
 
@@ -107,8 +108,9 @@ def main():
 
         print(position)
 
-        for i, image in enumerate(data):
-            cv2.imshow(str(i), image['image'])
+        if not args.no_gui:
+            for i, image in enumerate(data):
+                cv2.imshow(str(i), image['image'])
 
         # Send the solved position back to robot
         api.publish_test_matrices(matrices)
