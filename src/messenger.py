@@ -294,7 +294,8 @@ def _connect_thread(msg):
             for listen in msg.listening:
                 msg._listen(listen)
         except Exception:
-            print('Messenger connection failed')
+            if msg.log_errors:
+                print('Messenger connection failed')
 
         time.sleep(1)
     msg.connect_thread = None
@@ -337,7 +338,7 @@ class MessengerClient:
     This can be used to send messages between processes.
     """
 
-    def __init__(self, host, port, name):
+    def __init__(self, host, port, name, mute_errors=False):
         """
         Creates a new instance and attempts to connect to a
         Messenger server at the given address.
@@ -350,6 +351,7 @@ class MessengerClient:
         self.host = host
         self.port = port
         self.name = name
+        self.log_errors = not mute_errors
 
         self.socket = None
         self.connected = False
@@ -482,7 +484,9 @@ class MessengerClient:
     def _handle_error(self):
         self._disconnect_socket()
 
-        print("Messenger connection lost")
+        if self.log_errors:
+            print("Messenger connection lost")
+
         self.connected = False
 
         self._start_connect_thread()

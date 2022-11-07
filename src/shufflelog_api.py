@@ -15,8 +15,9 @@ class ShuffleLogAPI:
         host = conn_params['host']
         port = conn_params['port']
         name = conn_params['name']
+        mute_errors = conn_params['mute_errors']
 
-        self.msg = MessengerClient(host, port, name)
+        self.msg = MessengerClient(host, port, name, mute_errors=mute_errors)
         self.msg.add_handler(ShuffleLogAPI._MSG_QUERY_ENVIRONMENT, lambda t, r: self._on_query_environment(t, r))
         
         self.tag_infos = tag_infos

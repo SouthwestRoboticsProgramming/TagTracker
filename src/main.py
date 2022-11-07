@@ -95,7 +95,8 @@ def main():
     messenger_params = {
         'host': 'localhost',
         'port': 5805,
-        'name': 'TagTracker'
+        'name': 'TagTracker',
+        'mute_errors': True
     }
     api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
 
