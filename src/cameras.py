@@ -43,6 +43,9 @@ class Camera:
 
         return_list[return_index] = read_value
 
+    def release(self):
+        self.capture.release()
+
 
 class CameraArray:  # Multithread frame captures
     def __init__(self, logger, camera_list):
@@ -103,3 +106,7 @@ class CameraArray:  # Multithread frame captures
             params.append(camera_params_tuple)
 
         return params
+
+    def release_cameras(self):
+        for camera in self.camera_list:
+            camera.release()

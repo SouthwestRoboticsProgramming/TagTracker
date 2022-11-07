@@ -44,7 +44,7 @@ def main():
     else:
         NetworkTables.initialize()
     # Tables to send back to RoboRIO and driver station
-    todo_table_name = NetworkTables.getTable("TODO")  # TODO: Give it a name
+    dexter_table = NetworkTables.getTable("dexter")
 
     # Extract environment JSON
     try:
@@ -116,7 +116,7 @@ def main():
         # Send the solved position back to robot
         api.publish_test_matrices(matrices)
         if position is None: position = [0, 0, 0]
-        todo_table_name.putNumberArray('position', position)
+        dexter_table.putNumberArray('position', position)
 
         # Read incoming API messages
         api.read()
@@ -127,6 +127,8 @@ def main():
 
     # Disconnect from Messenger
     api.shutdown()
+    cv2.destroyAllWindows()
+    camera_array.release_cameras()
 
 
 if __name__ == '__main__':
