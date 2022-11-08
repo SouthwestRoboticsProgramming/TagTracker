@@ -8,7 +8,8 @@ match_number = fms.getEntry('MatchNumber')
 
 # Configure logging first so other files can use the same formatting
 LOG_FILENAME = 'Tracker.Log'
-TIME_FORMAT = '%y %a %b {} {}'.format(match_type.getString('Test Match'), match_number.getString('0'))
+TIME_FORMAT = f"%y %a %b {match_type.getString('Test Match')} {match_number.getString('0')}"
+
 LOG_FORMAT = '%(levelname)s %(asctime)s - %(message)s'
 logging.basicConfig(filename=LOG_FILENAME,
                     level=logging.DEBUG,
@@ -42,7 +43,7 @@ def main():
 
     # Configure NetworkTables
     networktable_ip = args.networktable_ip
-    if networktable_ip:  # If valid ip
+    if networktable_ip:
         NetworkTables.initialize(server=networktable_ip)
     else:
         NetworkTables.initialize()
@@ -54,9 +55,11 @@ def main():
         environment_json = open(args.environment, 'r')
         environment = json.load(environment_json)
         logger.info("Environment JSON loaded")
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, json.JSONDecodeError) as e:
         logger.exception("Could not open envionment JSON, quitting")
-        raise Exception("Could not open environment JSON '{}', is the path relative to /TagTracker/?".format(args.environment))
+        raise FileNotFoundError(f"Could not open environment JSON '{args.environment}', is the path relative to /TagTracker/?") from e
+
+
     environment_json.close()
 
     # Exctract cameras JSON
@@ -64,9 +67,11 @@ def main():
         cameras_json = open(args.cameras, 'r')
         cameras = json.load(cameras_json)
         logger.info("Cameras JSON loaded")
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
         logger.exception("Could not open cameras JSON, quitting")
-        raise Exception("Could not open cameras JSON '{}', is the path relative to /TagTracker?".format(args.cameras))
+        raise FileNotFoundError(f"Could not open cameras JSON '{args.cameras}', is the path relative to /TagTracker?") from exc
+
+
     cameras_json.close()
 
     # Extract detector JSON
@@ -74,18 +79,17 @@ def main():
         detector_json = open(args.detector, 'r')
         detector = json.load(detector_json)
         logger.info("Detector JSON loaded")
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, json.JSONDecodeError) as err:
         logger.exception("Could not open detector JSON, qutting")
-        raise Exception("Could not open detector JSON '{}', is the path relative to /TagTracker?".format(args.detector))
+        raise FileNotFoundError(f"Could not open detector JSON '{args.detector}', is the path relative to /TagTracker?") from err
+
+
     detector_json.close()
 
     # Setup a detector with the JSON settings
     detector = Detector(logger, detector)
 
-    camera_list = []
-
-    for camera_info in cameras['cameras']:
-        camera_list.append(Camera(camera_info))
+    camera_list = [Camera(camera_info) for camera_info in cameras['cameras']]
 
     # Setup a camera array with the JSON settings
     camera_array = CameraArray(logger, camera_list)

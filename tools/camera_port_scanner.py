@@ -13,16 +13,16 @@ def main():
     max_port = args.max
 
     if (min_port >= max_port):
-        raise Exception('Make sure the minimum port is less than the maximum!')
+        raise ValueError('Make sure the minimum port is less than the maximum!')
 
-    i = -10
     working_ids = []
-    while i <= 10:
+    for i in range(min_port, max_port):
         cap = cv2.VideoCapture(i)
 
         if cap.isOpened():
             working_ids.append(i)
-        i += 1
+
+        cap.realease()
 
     print('Working Camera Ports: \n \
     {}'.format(working_ids))
