@@ -1,6 +1,8 @@
 # Solves for robot position based on results of found tags
 import numpy as np
+import math
 from main import logger
+from quaternions import matrixToQuat, averageQuats
 
 # TODO-Ryan: Finish/Fix
 
@@ -118,11 +120,28 @@ class RobotPoseSolver:
 		# Combine poses with average (just for position, not rotation)
 
 		if len(estimated_poses_list) != 0:
-			# TODO: Figure out rotation
-			total = np.array([0.0, 0.0, 0.0])
+			rotation_total = []
+
+			position_total = np.array([0.0, 0.0, 0.0])
 			for pose in estimated_poses_list:
-				total += np.array([pose[0][3], pose[1][3], pose[2][3]])
-			average = total / len(estimated_poses_list)
+				# Add it to the transform total
+				position_total += np.array([pose[0][3], pose[1][3], pose[2][3]])
+
+				# Convert the entry to quaternion
+				quat = np.array(matrixToQuat(pose))
+				rotation_total.append(quat)
+			average = position_total / len(estimated_poses_list)
+
+			rotation_array = np.array(rotation_total)
+			# Average the combined array
+			average_rotation = averageQuats(rotation_array)
+			print(average_rotation)
+
+			a = average_rotation
+			q_len = math.sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2] + a[3]*a[3])
+			print("length", q_len)
+			
+
 			return (average, estimated_poses_list)
 		else:
 			# If we have no samples, report none

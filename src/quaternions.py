@@ -1,4 +1,6 @@
 import math
+import numpy as np
+import numpy.matlib as npm
 
 def matrixToQuat(m):
     r11 = m[0][0]; r12 = m[0][1]; r13 = m[0][2]
@@ -67,3 +69,27 @@ def quatToFUL(q):
     )
 
     return (forward, up, left)
+
+
+def averageQuats(quats_to_average):
+    # Extract number of quaternions
+    number_of_quats = quats_to_average.shape[0]
+    a = npm.zeros(shape=(4,4))
+
+    for i in range(number_of_quats):
+        q = quats_to_average[i,:]
+        # Multiply q with its transposed version of q' and add a
+        a = np.outer(q,q) + a
+
+    # Scale
+    a = (1.0/number_of_quats) * a
+
+    # Compute eigenvalues and -vectors
+    eigenValues, eigenVectors = np.linalg.eig(a)
+
+    # Sort by largest eigenvalue
+    eigenVectors = eigenVectors[:, eigenValues.argsort()[::-1]]
+
+    # Return the real part of the largest eigenvector
+    return np.real(eigenVectors[:,0].A1)
+
