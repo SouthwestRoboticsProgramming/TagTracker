@@ -16,6 +16,8 @@ logging.basicConfig(filename=LOG_FILENAME,
                     datefmt=TIME_FORMAT)
 logger = logging.getLogger()
 
+video_log = cv2.VideoWriter("Log.avi", cv2.VideoWriter_fourcc(*'MPEG'), 30, (300, 300))
+
 
 from argparse import ArgumentParser
 from tag_tracker import *
