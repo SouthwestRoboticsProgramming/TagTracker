@@ -26,9 +26,6 @@ from solver import *
 from shufflelog_api import ShuffleLogAPI
 import json
 
-import quaternion
-
-
 def main():
     # Create a parser to allow variable arguments
     parser = ArgumentParser(prog='AprilTag tracker',
