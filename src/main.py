@@ -21,8 +21,9 @@ from argparse import ArgumentParser
 from tag_tracker import *
 from solver import *
 from shufflelog_api import ShuffleLogAPI
-import threading
 import json
+
+import quaternion
 
 
 def main():
@@ -44,7 +45,7 @@ def main():
     else:
         NetworkTables.initialize()
     # Tables to send back to RoboRIO and driver station
-    dexter_table = NetworkTables.getTable("dexter")
+    table = NetworkTables.getTable("apriltag")
 
     # Extract environment JSON
     try:
@@ -116,7 +117,7 @@ def main():
         # Send the solved position back to robot
         api.publish_test_matrices(matrices)
         if position is None: position = [0, 0, 0]
-        dexter_table.putNumberArray('position', position)
+        table.putNumberArray('position', position)
 
         # Read incoming API messages
         api.read()
