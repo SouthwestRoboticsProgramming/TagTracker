@@ -31,7 +31,7 @@ class Detector: # Rename?
             results = self.detector.detect(gray)
 
             # Estimate the pose of the camera relative to each target
-            for i, result in enumerate(results):
+            for result in results:
                 # Undistort corners
 
                 # print(result.corners)
@@ -56,6 +56,6 @@ class Detector: # Rename?
 
             # Log number of tags found
             if estimated_poses:
-                logger.debug("Estimated pose on {} AprilTags".format(len(estimated_poses)))
+                logger.debug(f"Estimated pose on {len(estimated_poses)} AprilTags")
 
         return estimated_poses

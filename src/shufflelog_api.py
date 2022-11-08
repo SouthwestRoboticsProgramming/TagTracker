@@ -1,11 +1,11 @@
+from itertools import product
 from messenger import *
 
 def _write_matrix(builder, matrix):
     # Write as column major
-    for col in range(4):
-        for row in range(4):
-            # Float here since ShuffleLog stores matrices as float
-            builder.add_float(matrix[row][col])
+    for col, row in product(range(4), range(4)):
+        # Float here since ShuffleLog stores matrices as float
+        builder.add_float(matrix[row][col])
 
 class ShuffleLogAPI:
     _MSG_QUERY_ENVIRONMENT = "TagTracker:QueryEnvironment"

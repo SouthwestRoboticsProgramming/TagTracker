@@ -459,7 +459,7 @@ class MessengerClient:
         """
 
         if type.endswith('*'):
-            h = WildcardHandler(type[0:len(type) - 1], handler)
+            h = WildcardHandler(type[:-1], handler)
         else:
             h = DirectHandler(type, handler)
         self.handlers.append(h)
@@ -472,11 +472,7 @@ class MessengerClient:
     def _available(self):
         readable = select.select([self.socket], [], [], 0)[0]
 
-        for sock in readable:
-            if sock == self.socket:
-                return True
-
-        return False
+        return any(sock == self.socket for sock in readable)
 
     def _listen(self, type):
         self.prepare(_LISTEN).add_string(type).send()

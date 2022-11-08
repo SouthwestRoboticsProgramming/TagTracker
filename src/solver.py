@@ -56,11 +56,8 @@ class RobotPoseSolver:
 		# Unpack tag positions into lookup dictionary
 		if not environment_dict['tags']:
 			logger.error('No tags defined! Quitting')
-			raise Exception('No tags defined in environment JSON')
-		self.tags_dict = {}
-		for tag in environment_dict['tags']:
-			self.tags_dict[tag['id']] = tag
-
+			raise AssertionError('No tags defined in environment JSON')
+		self.tags_dict = {tag['id']: tag for tag in environment_dict['tags']}
 		self.tag_family = environment_dict['tag_family']
 
 		if self.tag_family != "36h11":
@@ -79,15 +76,15 @@ class RobotPoseSolver:
 			tag_family = pose_dict['tag_family']
 
 			# Find the tag info that matches that tag
-			if not (self.tag_family in str(tag_family)):
-				logger.warning("Found a tag that doesn't belong to {}".format(self.tag_family))
+			if self.tag_family not in str(tag_family):
+				logger.warning(f"Found a tag that doesn't belong to {self.tag_family}")
 				break
 
 			# Get the info for the tag
 			tag_dict = self.tags_dict.get(tag_id)
 
 			if not tag_dict:
-				logger.warning("Found a tag that isn't defined in environment. ID: {}".format(tag_id))
+				logger.warning(f"Found a tag that isn't defined in environment. ID: {tag_id}")
 				break
 
 			tag_pose = tag_dict['transform']
@@ -117,13 +114,13 @@ class RobotPoseSolver:
 
 		# Combine poses with average (just for position, not rotation)
 
-		if len(estimated_poses_list) != 0:
-			# TODO: Figure out rotation
-			total = np.array([0.0, 0.0, 0.0])
-			for pose in estimated_poses_list:
-				total += np.array([pose[0][3], pose[1][3], pose[2][3]])
-			average = total / len(estimated_poses_list)
-			return (average, estimated_poses_list)
-		else:
+		if not estimated_poses_list:
 			# If we have no samples, report none
 			return (None, estimated_poses_list)
+			
+		# TODO: Figure out rotation
+		total = np.array([0.0, 0.0, 0.0])
+		for pose in estimated_poses_list:
+			total += np.array([pose[0][3], pose[1][3], pose[2][3]])
+		average = total / len(estimated_poses_list)
+		return (average, estimated_poses_list)
