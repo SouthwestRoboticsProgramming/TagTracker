@@ -14,14 +14,15 @@ class Camera:
 
         # Extract params JSON
         try:
-            location = 'camera_params/{}.json'.format(camera_options['type'])
+            location = f"camera_params/{camera_options['type']}.json"
             params_json = open(location, 'r')
             params = json.load(params_json)
-            logger.info("Camera params JSON loaded for {}".format(self.name))
-        except (FileNotFoundError, json.JSONDecodeError):
+            logger.info(f"Camera params JSON loaded for {self.name}")
+        except (FileNotFoundError, json.JSONDecodeError) as e:
             logger.exception("Could not open camera parameters JSON, qutting")
-            raise Exception("Could not open cameara params JSON '{}' for {}, \
-                is the path relative to /camera_params?".format(camera_options['type'], self.name))
+            raise FileNotFoundError("Could not open cameara params JSON '{}' for {}, \
+                is the path relative to /camera_params?".format(camera_options['type'], self.name)) from e
+
         params_json.close()
 
         # Convert params to tuple
@@ -32,6 +33,8 @@ class Camera:
             0, self.camera_params[1], self.camera_params[3],
             0, 0, 1
         ]).reshape(3, 3)
+
+        self.is_driver = params['dist'] is not None
 
         self.capture = cv2.VideoCapture(camera_port)
 
