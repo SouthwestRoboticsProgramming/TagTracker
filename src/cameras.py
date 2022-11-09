@@ -11,6 +11,7 @@ class Camera:
         camera_port = camera_options['port']
         self.name = camera_options['name']
         self.robot_position = camera_options['robot_pose']
+        self.is_driver = camera_options.get('driver') is not None
 
         # Extract params JSON
         try:
@@ -34,9 +35,10 @@ class Camera:
             0, 0, 1
         ]).reshape(3, 3)
 
-        self.is_driver = params['dist'] is not None
 
         self.capture = cv2.VideoCapture(camera_port)
+
+        print(self.is_driver)
 
     def read(self, return_list=None, return_index=None):
         read_value = self.capture.read()
