@@ -38,8 +38,6 @@ class Camera:
 
         self.capture = cv2.VideoCapture(camera_port)
 
-        print(self.is_driver)
-
     def read(self, return_list=None, return_index=None):
         read_value = self.capture.read()
 
@@ -101,6 +99,9 @@ class CameraArray:  # Multithread frame captures
                     'camera': camera
                 }
         return images
+
+    def get_driver_cameras(self):
+        return [camera for camera in self.camera_list if camera.is_driver]
 
     def getParams(self):
         params = []
