@@ -22,7 +22,7 @@ def main():
         if cap.isOpened():
             working_ids.append(i)
 
-        cap.realease()
+        cap.release()
 
     print('Working Camera Ports: \n \
     {}'.format(working_ids))
