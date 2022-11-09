@@ -100,9 +100,6 @@ class CameraArray:  # Multithread frame captures
                 }
         return images
 
-    def get_driver_cameras(self):
-        return [camera for camera in self.camera_list if camera.is_driver]
-
     def getParams(self):
         params = []
 
