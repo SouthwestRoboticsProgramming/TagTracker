@@ -17,13 +17,13 @@ logging.basicConfig(filename=LOG_FILENAME,
                     datefmt=TIME_FORMAT)
 logger = logging.getLogger()
 
-video_log = cv2.VideoWriter("Log.avi", cv2.VideoWriter_fourcc(*'MPEG'), 30, (300, 300))
-
 
 from argparse import ArgumentParser
 from tag_tracker import *
 from solver import *
 from shufflelog_api import ShuffleLogAPI
+from driver_station import get_driver_frame
+from flask_opencv_streamer.streamer import Streamer
 import json
 
 def main():
@@ -104,6 +104,11 @@ def main():
     }
     api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
 
+    # Initialize Flask camera stream
+    port = 5802
+    stream = Streamer(port, False)
+    stream.start_streaming()
+
     # Main loop, run all the time like limelight
     while True:
         data = camera_array.read_cameras()
@@ -111,7 +116,7 @@ def main():
 
         position, matrices = solver.solve(detection_poses)
 
-        print(position)
+        # print(position)
 
         if not args.no_gui:
             for i, image in enumerate(data):
@@ -122,6 +127,9 @@ def main():
         if position is None: position = [0, 0, 0]
         table.putNumberArray('position', position)
 
+        # Send the camera feed to driver station
+        stream.update_frame(get_driver_frame(data))
+
         # Read incoming API messages
         api.read()
 
@@ -131,6 +139,8 @@ def main():
 
     # Disconnect from Messenger
     api.shutdown()
+
+    # Safely close video operation
     cv2.destroyAllWindows()
     camera_array.release_cameras()
 
