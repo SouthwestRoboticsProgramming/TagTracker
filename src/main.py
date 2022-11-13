@@ -22,9 +22,9 @@ from argparse import ArgumentParser
 from tag_tracker import *
 from solver import *
 from shufflelog_api import ShuffleLogAPI
-from driver_station import get_driver_frame
-from flask_opencv_streamer.streamer import Streamer
+from driver_station import Stream
 import json
+import time
 
 def main():
     # Create a parser to allow variable arguments
@@ -106,21 +106,23 @@ def main():
 
     # Initialize Flask camera stream
     port = 5802
-    stream = Streamer(port, False)
-    stream.start_streaming()
+    # stream = Stream()
+    # stream.start(port)
 
     # Main loop, run all the time like limelight
     while True:
+        tic = time.perf_counter()
         data = camera_array.read_cameras()
         detection_poses = detector.getPoses(data)
 
         position, matrices = solver.solve(detection_poses)
+        api.read()
 
         # print(position)
 
-        if not args.no_gui:
-            for i, image in enumerate(data):
-                cv2.imshow(str(i), image['image'])
+        # if not args.no_gui:
+        #     for i, image in enumerate(data):
+        #         cv2.imshow(str(i), image['image'])
 
         # Send the solved position back to robot
         api.publish_test_matrices(matrices)
@@ -128,14 +130,17 @@ def main():
         table.putNumberArray('position', position)
 
         # Send the camera feed to driver station
-        stream.update_frame(get_driver_frame(data))
+        # print("Sending!")
+        # stream.update(data)
 
         # Read incoming API messages
-        api.read()
+        toc = time.perf_counter()
+        print(f'FPS: {1/(toc-tic)}')
 
         # Q to stop the program
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
 
     # Disconnect from Messenger
     api.shutdown()

@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import json
 from main import logger
-
+import time
 
 class Camera:
     def __init__(self, camera_options):
@@ -38,13 +38,32 @@ class Camera:
 
         self.capture = cv2.VideoCapture(camera_port)
 
-    def read(self, return_list=None, return_index=None):
-        read_value = self.capture.read()
+    # def read(self, return_list=None, return_index=None):
+    #     read_value = self.capture.read()
 
-        if not return_list:  # If used outside of multithreaded camera system
-            return read_value
+    #     if not return_list:  # If used outside of multithreaded camera system
+    #         return read_value
 
-        return_list[return_index] = read_value
+    #     return_list[return_index] = read_value
+
+    # Takes a queue, when reading the queue, you are reading the most up-to-date image
+    def start_reader(self, images_list, list_index):
+        while True:
+            ret, frame = self.capture.read() # Read the camera
+
+            if not ret:
+                images_list[list_index] = ((ret, frame), self)
+                continue
+
+            height, width = frame.shape[:2]
+            dist_coeffs = np.array(self.distortion)
+            new_mtx, roi = cv2.getOptimalNewCameraMatrix(self.matrix, dist_coeffs, (width, height), 1, (width, height))
+
+            undistorted = cv2.undistort(frame, new_mtx, dist_coeffs, None, self.matrix)
+            crop_x, crop_y, crop_w, crop_h = roi
+            undistorted = undistorted[crop_y:crop_y + crop_h, crop_x:crop_x + crop_w]
+
+            images_list[list_index] = ((ret, frame), self)
 
     def release(self):
         self.capture.release()
@@ -57,48 +76,38 @@ class CameraArray:  # Multithread frame captures
 
         if not self.camera_list:
             logger.error("No cameras defined! Quitting")
-            raise Exception("No cameras defined in camera array!")
+            raise ValueError("No cameras defined in camera array!")
+
+        self.image_list = []
+        self.threads = []
+
+        # Create threads for each camera
+        for i, camera in enumerate(self.camera_list):
+            self.image_list.append(None) # Add something for the thread to edit
+            self.threads.append(Thread(target=camera.start_reader, args=(self.image_list, i,)))
+            self.threads[i].start()
 
     def read_cameras(self):  # Returns map of images to camera that they came from
-        threads = []  # Threads to run
-        images = []   # Collected images
-
-        for i, camera in enumerate(self.camera_list):
-            # Add a space for the image
-            images.append([None, camera])  # Attach camera info to image that will be collected
-
-            # Start a thread
-            threads.append(Thread(target=camera.read, args=(images[i], 0,)))
-            threads[i].start()
-
-        # Join threads to get back to one thread
-        for thread in threads:
-            thread.join()
+        final_images = []
 
         # Filter out failed image captures and log them
-        for i, read_image in enumerate(images):
+        for read_image in self.image_list:
+
+            if not read_image:
+                continue
 
             image, camera = read_image
 
             ret, frame = image  # Extract image into ret and the frame
 
             if not ret:  # If the image couldn't be captured
-                images.pop(i)
-                logger.error("{} failed to capture an image".format(camera.name))
+                logger.error(f"{camera.name} failed to capture an image")
             else:  # Otherwise, remove the ret and leave just the image
-                height, width = frame.shape[:2]
-                dist_coeffs = np.array(camera.distortion)
-                new_mtx, roi = cv2.getOptimalNewCameraMatrix(camera.matrix, dist_coeffs, (width, height), 1, (width, height))
-
-                undistorted = cv2.undistort(frame, camera.matrix, dist_coeffs, None, camera.matrix)
-                crop_x, crop_y, crop_w, crop_h = roi
-                undistorted = undistorted[crop_y:crop_y + crop_h, crop_x:crop_x + crop_w]
-
-                images[i] = {
-                    'image': undistorted,  # Remove  ret
+                final_images.append({
+                    'image': frame,  # Remove  ret
                     'camera': camera
-                }
-        return images
+                })
+        return final_images
 
     def getParams(self):
         params = []
