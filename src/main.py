@@ -1,5 +1,6 @@
 import logging
 from networktables import NetworkTables
+import time
 
 # Get field data to improve logging
 fms = NetworkTables.getTable("FMSInfo")
@@ -111,6 +112,7 @@ def main():
 
     # Main loop, run all the time like limelight
     while True:
+        tic = time.perf_counter();
         data = camera_array.read_cameras()
         detection_poses = detector.getPoses(data)
 
@@ -136,6 +138,9 @@ def main():
         # Q to stop the program
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        toc = time.perf_counter()
+        print(f"FPS: {1/(toc-tic)}")
 
     # Disconnect from Messenger
     api.shutdown()
