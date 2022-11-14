@@ -105,10 +105,6 @@ def main():
     }
     api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
 
-    # Initialize Flask camera stream
-    port = 5802
-    stream = Streamer(port, False)
-    stream.start_streaming()
 
     # Main loop, run all the time like limelight
     while True:
@@ -118,8 +114,6 @@ def main():
 
         position, matrices = solver.solve(detection_poses)
 
-        # print(position)
-
         if not args.no_gui:
             for i, image in enumerate(data):
                 cv2.imshow(str(i), image['image'])
@@ -128,9 +122,6 @@ def main():
         api.publish_test_matrices(matrices)
         if position is None: position = [0, 0, 0]
         table.putNumberArray('position', position)
-
-        # Send the camera feed to driver station
-        stream.update_frame(get_driver_frame(data))
 
         # Read incoming API messages
         api.read()

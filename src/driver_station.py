@@ -2,6 +2,8 @@ from imutils import build_montages
 import numpy as np
 import cv2
 
+# WIP Feature, not currently used.
+
 # data_dict holds both images and the camera that took them
 def get_driver_frame(data_dict):
     # Just get the cameras marked as driver
@@ -11,12 +13,11 @@ def get_driver_frame(data_dict):
     if drivers:
         # Arrange the images into one collage
         collage = create_collage(drivers)
+        collage = cv2.resize(collage, (50,50))
     else:
         # Just give back a blank image
         # TODO: Descriptive image
         collage = np.zeros(shape=[512,512,3], dtype=np.uint8)
-
-    cv2.imshow("collage", collage)
     return collage
 
 
