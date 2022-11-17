@@ -57,7 +57,41 @@ class RobotPoseSolver:
 		if not environment_dict['tags']:
 			logger.error('No tags defined! Quitting')
 			raise AssertionError('No tags defined in environment JSON')
-		self.tags_dict = {tag['id']: tag for tag in environment_dict['tags']}
+		# self.tags_dict = {tag['id']: tag for tag in environment_dict['tags']}
+
+		self.tags_dict = {}
+		for tag in environment_dict['tags']:
+			# Extract the ID
+			tag_id = tag['id'] # Try it with the old style
+			if tag_id is None:
+				tag_id = tag['ID'] # Try it with WPILib style
+
+			# Extract the position of the tag into a transform matrix
+			pose = tag['pose'] # All ways of writing it must be in "pose" : {}
+
+			matrix = pose.get('matrix')
+			if matrix is not None:
+				self.tags_dict[tag_id] = matrix
+				continue
+			
+			translation = pose['translation']
+			rotation = pose['rotation']
+
+			# See if it is a quaternion rotation
+			quaternion = rotation.get('quaternion')
+			if quaternion is not None:
+				# Convert to matrix
+				# FIXME
+				continue
+
+			# If it make it here, it must be Pitch, Yaw, Roll
+			pitch = rotation['pitch']
+			yaw = rotation['yaw']
+			roll = rotation['roll']
+			# Convert to matrix
+			# FIXME
+
+
 		self.tag_family = environment_dict['tag_family']
 
 		if self.tag_family != "16h5":
