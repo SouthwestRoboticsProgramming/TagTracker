@@ -60,9 +60,9 @@ class RobotPoseSolver:
 		self.tags_dict = {tag['id']: tag for tag in environment_dict['tags']}
 		self.tag_family = environment_dict['tag_family']
 
-		if self.tag_family != "36h11":
+		if self.tag_family != "16h5":
 			'''logger.warning('Are you sure that you want to look for, tags in the \
-				family {}. FRC uses 36h11'.format(self.tag_family))
+				family {}. FRC uses 16h5'.format(self.tag_family))
 			'''
 	def solve(self, detection_poses):
 		# Master list of estimated poses to be combined
