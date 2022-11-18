@@ -1,6 +1,8 @@
 # Solves for robot position based on results of found tags
 import numpy as np
 from main import logger
+from transform_matrix import *
+from transformations import *
 
 # TODO-Ryan: Finish/Fix
 
@@ -80,16 +82,24 @@ class RobotPoseSolver:
 			# See if it is a quaternion rotation
 			quaternion = rotation.get('quaternion')
 			if quaternion is not None:
-				# Convert to matrix
-				# FIXME
+				w = quaternion['W'] # WPILib standard
+				x = quaternion['X'] # WPILib standard
+				y = quaternion['Y'] # WPILib standard
+				z = quaternion['Z'] # WPILib standard
+				matrix = quaternion_matrix([w,x,y,z])
+
+
+				matrix = apply_translation(matrix, translation['x'], translation['y'], translation['z'])
+				self.tags_dict[tag_id] = matrix
 				continue
 
 			# If it make it here, it must be Pitch, Yaw, Roll
 			pitch = rotation['pitch']
 			yaw = rotation['yaw']
 			roll = rotation['roll']
-			# Convert to matrix
-			# FIXME
+			rotation_matrix = euler_to_matrix(pitch, yaw, roll)
+			matrix = apply_translation(rotation_matrix, translation['x'], translation['y'], translation['z'])
+			self.tags_dict[tag_id] = matrix
 
 
 		self.tag_family = environment_dict['tag_family']
