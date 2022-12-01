@@ -60,7 +60,7 @@ class RobotPoseSolver:
 		self.tags_dict = {tag['id']: tag for tag in environment_dict['tags']}
 		self.tag_family = environment_dict['tag_family']
 
-		if self.tag_family != "16h5":
+		if self.tag_family != "tag16h5":
 			'''logger.warning('Are you sure that you want to look for, tags in the \
 				family {}. FRC uses 16h5'.format(self.tag_family))
 			'''
