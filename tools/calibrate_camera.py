@@ -1,4 +1,5 @@
-from __future__ import print_function
+import random
+
 import numpy as np
 import cv2
 import argparse
@@ -20,6 +21,10 @@ def main():
 
     parser.add_argument('-i', '--input_camera', type=int,
                     default=0, help='change which camera to reac from by openCV id')
+
+    parser.add_argument('-m', '--max-images', metavar='N', type=int,
+                        default=0,
+                        help='max # of images to keep to use in calibration')
 
     options = parser.parse_args()
 
@@ -57,8 +62,6 @@ def main():
         # print(cursize, rgb.shape[::-1])
         
 
-        #print('Received frame of size {}x{}'.format(*imagesize))
-
         if len(rgb.shape) == 3:
             gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
         else:
@@ -68,59 +71,71 @@ def main():
 
         if imagesize is None:
             imagesize = cursize
+            print('Received frame of size {}x{}'.format(*imagesize))
         else:
             assert imagesize == cursize
 
         retval, corners = cv2.findChessboardCorners(gray, patternsize, None)
 
-        # Refine corners (apriltags devs forgot this)
         if retval:
+            # print('checkerboard acquired!')
+            # Refine corners (apriltags devs forgot this)
             refined = cv2.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
+            ipoints.append(refined)
 
             cv2.drawChessboardCorners(rgb, patternsize, refined, retval)
-
-        if not retval:
-            # print('warning: no chessboard found, skipping')
-            print('nothing found')
         else:
-            print('checkerboard aquired!')
-            ipoints.append(refined)
+            # print('warning: no chessboard found, skipping')
+            # print('nothing found')
+            pass
+
+        cv2.putText(rgb, str(len(ipoints)), (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv2.imshow("Image", rgb)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    opoints = [opoints] * len(ipoints)
+    print (f'got {len(ipoints)} points')
+    if options.max_images != 0 and len(ipoints) > options.max_images:
+        random.shuffle(ipoints)
+        ipoints = ipoints[:options.max_images]
+        print (f'using {len(ipoints)} points')
 
-    retval, K, dcoeffs, rvecs, tvecs = cv2.calibrateCamera(opoints, ipoints, imagesize, None, None)
+    if len(ipoints) == 0:
+        print("no data!")
+    else:
+        opoints = [opoints] * len(ipoints)
 
-    #assert( np.all(dcoeffs == 0) )
-    
-    fx = K[0,0]
-    fy = K[1,1]
-    cx = K[0,2]
-    cy = K[1,2]
+        retval, K, dcoeffs, rvecs, tvecs = cv2.calibrateCamera(opoints, ipoints, imagesize, None, None)
 
-    params = (fx, fy, cx, cy)
+        #assert( np.all(dcoeffs == 0) )
 
-    print()
-    print('all units below measured in pixels:')
-    print('  fx = {}'.format(K[0,0]))
-    print('  fy = {}'.format(K[1,1]))
-    print('  cx = {}'.format(K[0,2]))
-    print('  cy = {}'.format(K[1,2]))
-    print()
-    print('pastable into Python:')
-    print('  fx, fy, cx, cy = {}'.format(repr(params)))
-    print()
-    print('json:')
-    print('{')
-    print('  "fx": {},'.format(K[0,0]))
-    print('  "fy": {},'.format(K[1,1]))
-    print('  "cx": {},'.format(K[0,2]))
-    print('  "cy": {},'.format(K[1,2]))
-    print('  "dist": [{}]'.format(', '.join([str(n) for n in dcoeffs])))
-    print('}')
+        fx = K[0,0]
+        fy = K[1,1]
+        cx = K[0,2]
+        cy = K[1,2]
+
+        params = (fx, fy, cx, cy)
+
+        print()
+        print('all units below measured in pixels:')
+        print('  fx = {}'.format(K[0,0]))
+        print('  fy = {}'.format(K[1,1]))
+        print('  cx = {}'.format(K[0,2]))
+        print('  cy = {}'.format(K[1,2]))
+        print()
+        print('pastable into Python:')
+        print('  fx, fy, cx, cy = {}'.format(repr(params)))
+        print()
+        print('json:')
+        print('{')
+        print('  "fx": {},'.format(K[0,0]))
+        print('  "fy": {},'.format(K[1,1]))
+        print('  "cx": {},'.format(K[0,2]))
+        print('  "cy": {},'.format(K[1,2]))
+        print('  "dist": {}'.format(dcoeffs.tolist()))
+        print('}')
 
     cv2.destroyAllWindows()
 
