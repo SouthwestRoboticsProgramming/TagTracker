@@ -8,8 +8,6 @@ yes | apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1
 
 echo "[INFO] Installing dependencies"
 
-pip install opencv-contrib-python
-pip install apriltag
-pip install pynetworktables
+pip install opencv-contrib-python apriltag pynetworktables
 
 echo "[INFO] Finished setup"
