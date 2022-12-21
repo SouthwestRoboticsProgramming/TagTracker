@@ -104,7 +104,7 @@ class RobotPoseSolver:
 
 		self.tag_family = environment_dict['tag_family']
 
-		if self.tag_family != "16h5":
+		if self.tag_family != "tag16h5":
 			'''logger.warning('Are you sure that you want to look for, tags in the \
 				family {}. FRC uses 16h5'.format(self.tag_family))
 			'''
@@ -122,14 +122,14 @@ class RobotPoseSolver:
 			# Find the tag info that matches that tag
 			if self.tag_family not in str(tag_family):
 				logger.warning(f"Found a tag that doesn't belong to {self.tag_family}")
-				break
+				continue
 
 			# Get the info for the tag
 			tag_dict = self.tags_dict.get(tag_id)
 
 			if not tag_dict:
 				logger.warning(f"Found a tag that isn't defined in environment. ID: {tag_id}")
-				break
+				continue
 
 			tag_pose = tag_dict['transform']
 
