@@ -68,12 +68,17 @@ class RobotPoseSolver:
 			if tag_id is None:
 				tag_id = tag['ID'] # Try it with WPILib style
 
+			self.tags_dict[tag_id] = {
+				'size' : tag['size'],
+				'pose': None
+			}
+
 			# Extract the position of the tag into a transform matrix
 			pose = tag['pose'] # All ways of writing it must be in "pose" : {}
 
 			matrix = pose.get('matrix')
 			if matrix is not None:
-				self.tags_dict[tag_id] = matrix
+				self.tags_dict[tag_id]['pose'] = matrix
 				continue
 			
 			translation = pose['translation']
@@ -90,7 +95,7 @@ class RobotPoseSolver:
 
 
 				matrix = apply_translation(matrix, translation['x'], translation['y'], translation['z'])
-				self.tags_dict[tag_id] = matrix
+				self.tags_dict[tag_id]['pose'] = matrix
 				continue
 
 			# If it make it here, it must be Pitch, Yaw, Roll
@@ -99,7 +104,7 @@ class RobotPoseSolver:
 			roll = rotation['roll']
 			rotation_matrix = euler_to_matrix(pitch, yaw, roll)
 			matrix = apply_translation(rotation_matrix, translation['x'], translation['y'], translation['z'])
-			self.tags_dict[tag_id] = matrix
+			self.tags_dict[tag_id]['pose'] = matrix
 
 
 		self.tag_family = environment_dict['tag_family']
@@ -127,11 +132,11 @@ class RobotPoseSolver:
 			# Get the info for the tag
 			tag_dict = self.tags_dict.get(tag_id)
 
-			if not tag_dict:
+			if tag_dict is None:
 				logger.warning(f"Found a tag that isn't defined in environment. ID: {tag_id}")
 				continue
 
-			tag_pose = tag_dict['transform']
+			tag_pose = tag_dict['pose']
 
 			# Convert to numpy arrarys for math
 			estimated_pose = np.array(estimated_pose)
