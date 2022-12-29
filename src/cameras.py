@@ -4,11 +4,14 @@ import numpy as np
 import json
 from main import logger
 import time
+import subprocess
 
 class Camera:
     def __init__(self, camera_options):
         # Extract indevidual values
-        camera_port = camera_options['port']
+        camera_port = camera_options.get('port')
+        if camera_port is None:
+            camera_port = get_camera_by_serial(camera_options['serial'])
         self.name = camera_options['name']
         self.robot_position = camera_options['robot_pose']
         self.is_driver = camera_options.get('driver') is not None
@@ -122,3 +125,21 @@ class CameraArray:  # Multithread frame captures
     def release_cameras(self):
         for camera in self.camera_list:
             camera.release()
+
+
+# Works by running the command "udevadm info --name/dev/video0"
+def get_cam_serial(cam_id):
+    FILTER = "ID_SERIAL="
+
+    p = subprocess.Popen('udevadm info --name=/dev/video{} | grep {} | cut -d "=" -f 2'.format(cam_id, FILTER),
+                         stdout=subprocess.PIPE, shell=True)
+    (output, err) = p.communicate()
+    p.status = p.wait()
+    response = output.decode('utf-8')
+    return response.replace('\n', '')
+
+def get_camera_by_serial(serial):
+    for cam_id in range(0, 10, 2):
+        s = get_cam_serial(cam_id)
+        if s == serial:
+            return cam_id
