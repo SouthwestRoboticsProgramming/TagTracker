@@ -139,7 +139,7 @@ def get_cam_serial(cam_id):
     return response.replace('\n', '')
 
 def get_camera_by_serial(serial):
-    for cam_id in range(0, 10, 2):
+    for cam_id in range(0, 10):
         s = get_cam_serial(cam_id)
         if s == serial:
             return cam_id
