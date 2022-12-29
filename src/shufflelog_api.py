@@ -1,6 +1,22 @@
 from itertools import product
 from messenger import *
 
+"""
+[debug] sending environment data to ShuffleLog
+Traceback (most recent call last):
+  File "/home/ultraviolet/github/TagTracker/src/messenger.py", line 399, in read_messages
+    self._read_message()
+  File "/home/ultraviolet/github/TagTracker/src/messenger.py", line 532, in _read_message
+    handler.handle(message_type, message_data)
+  File "/home/ultraviolet/github/TagTracker/src/messenger.py", line 332, in handle
+    self.handler(type, MessageReader(data))
+  File "/home/ultraviolet/github/TagTracker/src/shufflelog_api.py", line 21, in <lambda>
+    self.msg.add_handler(ShuffleLogAPI._MSG_QUERY_ENVIRONMENT, lambda t, r: self._on_query_environment(t, r))
+  File "/home/ultraviolet/github/TagTracker/src/shufflelog_api.py", line 57, in _on_query_environment
+    _write_matrix(builder, tag['transform'])
+KeyError: 'transform'
+"""
+
 def _write_matrix(builder, matrix):
     # Write as column major
     for col, row in product(range(4), range(4)):
@@ -51,10 +67,10 @@ class ShuffleLogAPI:
         builder = self.msg.prepare(ShuffleLogAPI._MSG_ENVIRONMENT)
 
         builder.add_int(len(self.tag_infos))
-        for tag in self.tag_infos:
+        for id, tag in self.tag_infos.items():
             builder.add_double(tag['size'])
-            builder.add_int(tag['id'])
-            _write_matrix(builder, tag['transform'])
+            builder.add_int(id)
+            _write_matrix(builder, tag['pose'])
         
         builder.add_int(len(self.camera_infos))
         for camera in self.camera_infos:

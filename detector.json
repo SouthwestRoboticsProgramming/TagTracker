@@ -2,7 +2,7 @@
     "families" : "tag16h5",
     "border" : 1,
     "nthreads" : 4,
-    "quad_decimate" : 1,
+    "quad_decimate" : 4,
     "quad_blur" : 0,
     "quad_sigma" : 1,
     "refine_edges" : true,

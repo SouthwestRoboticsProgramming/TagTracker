@@ -13,7 +13,7 @@ import time
 import threading
 import struct
 import select
-
+import traceback
 
 class MessageBuilder:
     """
@@ -528,7 +528,11 @@ class MessengerClient:
         message_data = self._read(data_len)
 
         for handler in self.handlers:
-            handler.handle(message_type, message_data)
+            try:
+                handler.handle(message_type, message_data)
+            except Exception as e:
+                print("Exception in message handler:")
+                print(traceback.format_exc())
 
     def _disconnect_socket(self):
         if self.connect_thread is not None:
