@@ -13,7 +13,7 @@
                     },
     
                     "rotation": {
-                        "pitch" : 3.1415,
+                        "pitch" : 0,
                         "yaw": 0,
                         "roll": 0
                     }
