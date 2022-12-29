@@ -2,44 +2,32 @@ import numpy as np
 import math
 
 def euler_to_matrix(pitch, yaw, roll):
-    # x is pitch
-    # y is yaw
-    # z is roll
+    x_rad = math.radians(pitch)
+    y_rad = math.radians(yaw)
+    z_rad = math.radians(roll)
 
-    # Do sin an cosine for all axis
-    s_pitch = math.sin(pitch)
-    c_pitch = math.cos(pitch)
+    rot_z = np.identity(4)
 
-    s_yaw = math.sin(yaw)
-    c_yaw = math.cos(yaw)
+    rot_z[0,0] = math.cos(z_rad)
+    rot_z[0,1] = -math.sin(z_rad)
+    rot_z[1,0] = math.sin(z_rad)
+    rot_z[1,1] = math.cos(z_rad)
 
-    s_roll = math.sin(roll)
-    c_roll = math.cos(roll)
+    rot_x = np.identity(4)
 
-    # Initial matrix to edit
-    x = np.array(
-        [[1, 0, 0, 0],
-        [0, c_pitch, -s_pitch, 0],
-        [0, s_pitch, c_pitch, 0],
-        [0, 0, 0, 1]]
-    )
+    rot_x[1,1] = math.cos(x_rad)
+    rot_x[1,2] = -math.sin(x_rad)
+    rot_x[2,1] = math.sin(x_rad)
+    rot_x[2,2] = math.cos(x_rad)
 
-    y = np.array(
-        [[c_yaw, 0, s_yaw, 0],
-        [0, 1, 0, 0],
-        [-s_yaw, 0, c_yaw, 0],
-        [0, 0, 0, 1]]
-    )
+    rot_y = np.identity(4)
 
-    z = np.array(
-        [[c_roll, -s_roll, 0, 0],
-        [s_roll, c_roll, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]]
-    )
+    rot_y[0,0] = math.cos(y_rad)
+    rot_y[0,2] = math.sin(y_rad)
+    rot_y[2,0] = -math.sin(y_rad)
+    rot_y[2,2] = math.cos(y_rad)
 
-    # Combine indevidual matricies
-    return np.dot(z, np.dot(y,x))
+    return np.dot(rot_y, np.dot(rot_x, rot_z))
 
 def apply_translation(matrix, x, y, z):
     matrix[0][3] = x

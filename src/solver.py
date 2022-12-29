@@ -99,7 +99,7 @@ class RobotPoseSolver:
 				continue
 
 			# If it make it here, it must be Pitch, Yaw, Roll
-			pitch = rotation['pitch']
+			pitch = rotation['pitch'] - 90  # Makes the default be a tag that is posted on a wall
 			yaw = rotation['yaw']
 			roll = rotation['roll']
 			rotation_matrix = euler_to_matrix(pitch, yaw, roll)
