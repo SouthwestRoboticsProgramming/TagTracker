@@ -129,7 +129,7 @@ class CameraArray:  # Multithread frame captures
 
 # Works by running the command "udevadm info --name/dev/video0"
 def get_cam_serial(cam_id):
-    FILTER = "ID_SERIAL="
+    FILTER = "ID_SERIAL_SHORT="
 
     p = subprocess.Popen('udevadm info --name=/dev/video{} | grep {} | cut -d "=" -f 2'.format(cam_id, FILTER),
                          stdout=subprocess.PIPE, shell=True)
