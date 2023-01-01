@@ -3,6 +3,10 @@ import sys
 
 from networktables import NetworkTablesInstance
 
+DEFAULT_CONFIG_PATH = '/boot/frc.json'
+# DEFAULT_CONFIG_PATH = 'frc.json'
+
+
 def extract_config(path):
     team = 0
     is_server = False
@@ -14,14 +18,14 @@ def extract_config(path):
         with open(path, 'rt', encoding='utf-8') as file:
             config = json.load(file)
     except OSError as e:
-        raise FileNotFoundError(f"Couldn't find {path}", file=sys.stderr) from e
+        raise FileNotFoundError(f"Couldn't find {path}") from e
 
     # Check that the json is formatted correctly
     if not isinstance(config, dict):
         raise TypeError("json not formatted correctly")
 
     # Extract team number
-    team = config.get('team')
+    team = config['team']
     if team is None:
         raise KeyError('No team number defined')
     
@@ -33,7 +37,7 @@ def extract_config(path):
         elif mode == 'server':
             is_server = True
         else:
-            raise NameError(f"Coudn't understand ntmode {mode} in config file")
+            raise NameError(f"Couldn't understand ntmode {mode} in config file")
     
     # Extract USB cameras
     camera_configs = config.get('cameras')
@@ -49,7 +53,7 @@ def extract_config(path):
 
 def main():
     # Default config path is "/boot/frc.json" for WPILibPI
-    configPath = sys.argv[1] if len(sys.argv) >= 2 else "/boot/frc.json"
+    configPath = sys.argv[1] if len(sys.argv) >= 2 else DEFAULT_CONFIG_PATH
 
     team, is_server, camera_configs, switched_configs = extract_config(configPath)
 
@@ -60,7 +64,8 @@ def main():
         ntinst.startServer()
     else:
         print(f"Connecting to NetworkTables for team {team}")
-        ntinst.startClient(team)
+        print(type(team))
+        ntinst.startClientTeam(team)
         ntinst.startDSClient()
 
     # Create a table to publish values to
@@ -71,8 +76,11 @@ def main():
     # Loop until power is cut
     i = 0
     while True:
-        table.putNumber(i)
+        table.putNumber("Test value", i)
         i+=1
+
+if __name__ == '__main__':
+    main()
 
 
     
