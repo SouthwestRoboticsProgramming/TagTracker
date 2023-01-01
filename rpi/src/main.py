@@ -1,175 +1,155 @@
-#!/usr/bin/env python3
-
-# Copyright (c) FIRST and other WPILib contributors.
-# Open Source Software; you can modify and/or share it under the terms of
-# the WPILib BSD license file in the root directory of this project.
-
 import json
-import time
 import sys
+import time
 
-from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
+import cv2
+import numpy as np
+
+# Used to send values back to RoboRIO
 from networktables import NetworkTablesInstance
-from Cameras import USBCamera
 
-#   JSON format:
-#   {
-#       "team": <team number>,
-#       "ntmode": <"client" or "server", "client" if unspecified>
-#       "cameras": [
-#           {
-#               "name": <camera name>
-#               "path": <path, e.g. "/dev/video0">
-#               "pixel format": <"MJPEG", "YUYV", etc>   // optional
-#               "width": <video mode width>              // optional
-#               "height": <video mode height>            // optional
-#               "fps": <video mode fps>                  // optional
-#               "brightness": <percentage brightness>    // optional
-#               "white balance": <"auto", "hold", value> // optional
-#               "exposure": <"auto", "hold", value>      // optional
-#               "properties": [                          // optional
-#                   {
-#                       "name": <property name>
-#                       "value": <property value>
-#                   }
-#               ],
-#               "stream": {                              // optional
-#                   "properties": [
-#                       {
-#                           "name": <stream property name>
-#                           "value": <stream property value>
-#                       }
-#                   ]
-#               }
-#           }
-#       ]
-#       "switched cameras": [
-#           {
-#               "name": <virtual camera name>
-#               "key": <network table key used for selection>
-#               // if NT value is a string, it's treated as a name
-#               // if NT value is a double, it's treated as an integer index
-#           }
-#       ]
-#   }
+# Mostly used for sending video back to driver station
+from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 
-configFile = "/boot/frc.json"
+DEFAULT_CONFIG_PATH = '/boot/frc.json'
 
-class CameraConfig: pass
+class USBCamera:
+    stream = None
+    image_base = None
 
-team = None
-server = False
-cameraConfigs = []
-cameras = []
+    def __init__(self, config):
 
-def parseError(str):
-    """Report parse error."""
-    print("config error in '" + configFile + "': " + str, file=sys.stderr)
+        # Extract json into values
 
-def readCameraConfig(config):
-    """Read single camera configuration."""
-    cam = CameraConfig()
+        # Extract name
+        name = config.get('name')
+        if name is None:
+            raise KeyError("No name defined for camera")
+        
+        # Extract path to video stream
+        path = config.get('path')
+        if path is None:
+            raise KeyError("No camera stream path defined")
 
-    # name
+        # Stream properties
+        stream_properties = config.get('stream') # Intentionally allowed to be None, default is defined
+
+
+        print(f"Starting camera '{name}' on {path}")
+
+        inst = CameraServer.getInstance()
+        camera = UsbCamera(name, path)
+
+        # Start sending video feed back to driver station
+        server = inst.startAutomaticCapture(camera=camera)
+
+        # Configure the camera
+        camera.setConfigJson(json.dumps(config))
+        camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+
+        if config.get('streamConfig') is not None:
+            server.setConfigJson(json.dumps(stream_properties))
+
+        self.stream = inst.getVideo(camera=camera)
+
+        width = config.get('width')
+        height = config.get('height')
+        if width is None or height is None:
+            raise KeyError("Width or height not defined")
+        
+        self.image_base = np.zeros(shape=(height, width, 3), dtype=np.uint8)
+
+    def get_image(self):
+        frame_time, frame = self.stream.grabFrame(self.image_base)
+        return frame_time, frame
+
+# TODO: Switched camera support
+
+
+
+def extract_config(path):
+    team = 0
+    is_server = False
+    camera_configs = []
+    switched_configs = []
+
+    # Extract into json
     try:
-        cam.name = config["name"]
-    except KeyError:
-        parseError("could not read camera name")
-        return False
+        with open(path, 'rt', encoding='utf-8') as file:
+            config = json.load(file)
+    except OSError as e:
+        raise FileNotFoundError(f"Couldn't find {path}") from e
 
-    # path
-    try:
-        cam.path = config["path"]
-    except KeyError:
-        parseError("camera '{}': could not read path".format(cam.name))
-        return False
+    # Check that the json is formatted correctly
+    if not isinstance(config, dict):
+        raise TypeError("json not formatted correctly")
 
-    # stream properties
-    cam.streamConfig = config.get("stream")
-
-    cam.config = config
-
-    cameraConfigs.append(cam)
-    return True
-
-
-def readConfig():
-    """Read configuration file."""
-    global team
-    global server
-
-    # parse file
-    try:
-        with open(configFile, "rt", encoding="utf-8") as f:
-            j = json.load(f)
-    except OSError as err:
-        print("could not open '{}': {}".format(configFile, err), file=sys.stderr)
-        return False
-
-    # top level must be an object
-    if not isinstance(j, dict):
-        parseError("must be JSON object")
-        return False
-
-    # team number
-    try:
-        team = j["team"]
-    except KeyError:
-        parseError("could not read team number")
-        return False
-
-    # ntmode (optional)
-    if "ntmode" in j:
-        str = j["ntmode"]
-        if str.lower() == "client":
-            server = False
-        elif str.lower() == "server":
-            server = True
+    # Extract team number
+    team = config['team']
+    if team is None:
+        raise KeyError('No team number defined')
+    
+    # Check if it should be client or server (optional config)
+    if 'ntmode' in config:
+        mode = config['ntmode'].lower()
+        if mode == 'client':
+            is_server = False
+        elif mode == 'server':
+            is_server = True
         else:
-            parseError("could not understand ntmode value '{}'".format(str))
+            raise NameError(f"Couldn't understand ntmode {mode} in config file")
+    
+    # Extract USB cameras
+    camera_configs = config.get('cameras')
+    if camera_configs is None:
+        raise KeyError("No cameras defined!")
 
-    # cameras
-    try:
-        cameras = j["cameras"]
-    except KeyError:
-        parseError("could not read cameras")
-        return False
-    for camera in cameras:
-        if not readCameraConfig(camera):
-            return False
+    # Extract switched cameras
+    if 'switched cameras' in config:
+        switched_configs = config['switched cameras']
 
-    # switched cameras
-    if "switched cameras" in j:
-        for camera in j["switched cameras"]:
-            if not readSwitchedCameraConfig(camera):
-                return False
+    return team, is_server, camera_configs, switched_configs
+    
 
-    return True
+def main():
+    # Default config path is "/boot/frc.json" for WPILibPI
+    configPath = sys.argv[1] if len(sys.argv) >= 2 else DEFAULT_CONFIG_PATH
 
+    team, is_server, camera_configs, switched_configs = extract_config(configPath)
 
-if __name__ == "__main__":
-    if len(sys.argv) >= 2:
-        configFile = sys.argv[1]
-
-    # read configuration
-    if not readConfig():
-        sys.exit(1)
-
-    # start NetworkTables
+    # Start NetworkTables
     ntinst = NetworkTablesInstance.getDefault()
-    if server:
-        print("Setting up NetworkTables server")
+    if is_server:
+        print("Starting NetworkTables server")
         ntinst.startServer()
     else:
-        print("Setting up NetworkTables client for team {}".format(team))
+        print(f"Connecting to NetworkTables for team {team}")
+        print(type(team))
         ntinst.startClientTeam(team)
         ntinst.startDSClient()
 
-    # start cameras
-    for config in cameraConfigs:
+    # Create a table to publish values to
+    table = ntinst.getTable('tagtracker')
+
+    # Configure cameras
+    cameras = []
+    for config in camera_configs:
         cameras.append(USBCamera(config))
 
-    # loop forever
+    output_stream = CameraServer.getInstance().putVideo('Processed', 320, 240)
+
+    # Loop until power is cut
+    print("Starting main process")
     while True:
-        time.sleep(10)
-        print("I'm still running!")
+        # Test by doing operations on camera 1
+        frame_time, frame = cameras[0].get_image()
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        output_stream.putFrame(gray)
+
+
+
+if __name__ == '__main__':
+    main()
+
