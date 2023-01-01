@@ -3,8 +3,8 @@ import sys
 
 from networktables import NetworkTablesInstance
 
-DEFAULT_CONFIG_PATH = '/boot/frc.json'
-# DEFAULT_CONFIG_PATH = 'frc.json'
+# DEFAULT_CONFIG_PATH = '/boot/frc.json'
+DEFAULT_CONFIG_PATH = 'frc.json'
 
 
 def extract_config(path):
@@ -74,10 +74,12 @@ def main():
     # Configure cameras (TODO)
 
     # Loop until power is cut
+    print("Starting main process")
     i = 0
     while True:
         table.putNumber("Test value", i)
         i+=1
+        print(i)
 
 if __name__ == '__main__':
     main()
