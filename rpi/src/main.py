@@ -10,6 +10,7 @@ from networktables import NetworkTablesInstance
 
 # Mostly used for sending video back to driver station
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
+from tag_tracker import Detector
 
 DEFAULT_CONFIG_PATH = '/boot/frc.json'
 
@@ -131,6 +132,21 @@ def main():
     # Create a table to publish values to
     table = ntinst.getTable('tagtracker')
 
+    # Create a detector to estimate poses
+    detector = Detector({
+        "families": "tag16h5",
+        "border": 1,
+        "nthreads": 4,
+        "quad_decimate": 4,
+        "quad_blur": 0,
+        "quad_sigma": 1,
+        "refine_edges": False,
+        "refine_decode": False,
+        "refine_pose": False,
+        "debug": False,
+        "quad_contours": True
+    })
+
     # Configure cameras
     cameras = []
     for config in camera_configs:
@@ -144,9 +160,16 @@ def main():
         # Test by doing operations on camera 1
         frame_time, frame = cameras[0].get_image()
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Estimate poses on the frame
+        estimated_poses = detector.estimate_pose(frame, 
+        (
+            676.6192195641298,
+            676.8359339562655,
+            385.1137834870396,
+            201.81402152233636
+        ))
 
-        output_stream.putFrame(gray)
+        output_stream.putFrame(frame)
 
 
 
