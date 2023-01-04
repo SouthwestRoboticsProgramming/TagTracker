@@ -6,9 +6,59 @@ from main import logger
 import time
 import subprocess
 
+class CameraServerCamera:
+    stream = None
+    image_base = None
+
+    def __init__(self, config):
+
+        # Extract json into values
+
+        # Extract name
+        name = config.get('name')
+        if name is None:
+            raise KeyError("No name defined for camera")
+        
+        # Extract path to video stream
+        path = config.get('path')
+        if path is None:
+            raise KeyError("No camera stream path defined")
+
+        # Stream properties
+        stream_properties = config.get('stream') # Intentionally allowed to be None, default is defined
+
+
+        print(f"Starting camera '{name}' on {path}")
+
+        inst = CameraServer.getInstance()
+        camera = UsbCamera(name, path)
+
+        # Start sending video feed back to driver station
+        server = inst.startAutomaticCapture(camera=camera)
+
+        # Configure the camera
+        camera.setConfigJson(json.dumps(config))
+        camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+
+        if config.get('streamConfig') is not None:
+            server.setConfigJson(json.dumps(stream_properties))
+
+        self.stream = inst.getVideo(camera=camera)
+
+        width = config.get('width')
+        height = config.get('height')
+        if width is None or height is None:
+            raise KeyError("Width or height not defined")
+        
+        self.image_base = np.zeros(shape=(height, width, 3), dtype=np.uint8)
+
+    def get_image(self):
+        frame_time, frame = self.stream.grabFrame(self.image_base)
+        return frame_time, frame
+
 class Camera:
     def __init__(self, camera_options):
-        # Extract indevidual values
+        # Extract individual values
         camera_port = camera_options.get('port')
         if camera_port is None:
             camera_port = get_camera_by_serial(camera_options['serial'])

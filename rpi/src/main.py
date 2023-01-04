@@ -132,6 +132,8 @@ def main():
     # Create a table to publish values to
     table = ntinst.getTable('tagtracker')
 
+    table.
+
     # Create a detector to estimate poses
     detector = Detector({
         "families": "tag16h5",
