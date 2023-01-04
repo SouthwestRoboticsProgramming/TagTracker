@@ -6,7 +6,7 @@ from cameras import USBCamera
 from overlays import *
 
 # Used to send values back to RoboRIO
-from networktales import NetworkTablesInstance
+from networktables import NetworkTablesInstance
 
 def main():
     print("Starting main process")
