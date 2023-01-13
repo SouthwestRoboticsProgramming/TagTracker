@@ -21,9 +21,7 @@ pip install -r requirements.txt
 
 echo "[INFO] Installed dependencies"
 
-dir = $(dirname "$SCRIPT")
-service = echo $(<apriltag_detector.service) | sed -r 's|%p|$dir/src/main.py|g'
-echo  $service > "/etc/systemd/system/apriltag_detector.service"
+python install_service.py
 
 echo "[INFO] Installed service"
 
