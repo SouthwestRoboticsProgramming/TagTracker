@@ -1,5 +1,5 @@
 [Unit]
-Description=Dash Button Sniffer
+Description=Apriltag Detector Service
 
 [Service]
 Type=simple
