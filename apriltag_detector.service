@@ -3,7 +3,7 @@ Description=Apriltag Detector Service
 
 [Service]
 Type=simple
-WorkingDirectory = %P
+WorkingDirectory = %p
 ExecStart=/usr/bin/python3 %s
 
 [Install]
