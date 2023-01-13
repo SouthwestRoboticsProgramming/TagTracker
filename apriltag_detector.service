@@ -3,7 +3,7 @@ Description=Apriltag Detector Service
 
 [Service]
 Type=simple
-ExecStart=cd %p && python3 %s
+ExecStart=cd %p && /usr/bin/python3 %s
 
 [Install]
 WantedBy=multi-user.target
