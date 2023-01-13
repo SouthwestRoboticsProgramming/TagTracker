@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 echo "[INFO] Installed dependencies"
 
-python install_service.py
+python3 install_service.py
 
 echo "[INFO] Installed service"
 

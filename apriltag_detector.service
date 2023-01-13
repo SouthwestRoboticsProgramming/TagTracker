@@ -3,7 +3,7 @@ Description=Dash Button Sniffer
 
 [Service]
 Type=simple
-ExecStart=%s
+ExecStart=python3 %s
 
 [Install]
 WantedBy=multi-user.target
