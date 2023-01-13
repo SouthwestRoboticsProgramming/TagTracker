@@ -1,0 +1,9 @@
+[Unit]
+Description=Dash Button Sniffer
+
+[Service]
+Type=simple
+ExecStart=%s
+
+[Install]
+WantedBy=multi-user.target
