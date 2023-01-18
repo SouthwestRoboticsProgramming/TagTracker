@@ -1,5 +1,4 @@
 apriltag==0.0.16
 numpy==1.24.1
-opencv-contrib-python-headless==4.7.0.68
 pynetworktables==2021.0.0
 imutils==0.5.4

@@ -7,7 +7,7 @@ fi
 
 echo "[INFO] Starting setup"
 
-yes | apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 python3 python3-pip cmake
+yes | apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 python3 python3-pip python3-opencv cmake
 
 echo "[INFO] Installed packages"
 
