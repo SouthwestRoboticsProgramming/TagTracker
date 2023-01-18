@@ -11,6 +11,10 @@ yes | apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1
 
 echo "[INFO] Installed packages"
 
+pip install pip setuptools wheel --upgrade
+
+echo "[INFO] Made sure pip dependencies are up to date"
+
 pip install -r requirements.txt
 
 echo "[INFO] Installed dependencies"
