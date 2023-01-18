@@ -25,5 +25,6 @@ echo "[INFO] Installed service"
 
 systemctl daemon-reload
 systemctl enable apriltag_detector.service
+systemctl start apriltag_detector.service
 
 echo "[INFO] Started and enabled service"
