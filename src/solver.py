@@ -119,7 +119,7 @@ class RobotPoseSolver:
 			return (None, estimated_poses_list)
 			
 		# TODO: Figure out rotation
-		total = np.array([0.0, 0.0, 0.0])
+		total = np.zeros(3, dtype=np.float64)
 		for pose in estimated_poses_list:
 			total += np.array([pose[0][3], pose[1][3], pose[2][3]])
 		average = total / len(estimated_poses_list)
