@@ -100,9 +100,9 @@ def main():
         'host': 'localhost',
         'port': 5805,
         'name': 'TagTracker',
-        'mute_errors': True
+        'mute_errors': False
     }
-    api = ShuffleLogAPI(messenger_params, environment['tags'], cameras['cameras'])
+    api = ShuffleLogAPI(messenger_params, solver.tags_dict, cameras['cameras'])
 
 
     # Main loop, run all the time like limelight
