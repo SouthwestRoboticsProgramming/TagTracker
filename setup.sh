@@ -18,3 +18,13 @@ pip install apriltag
 pip install pynetworktables
 
 echo "[INFO] Installed dependencies"
+
+python3 setup_service.py
+
+echo "[INFO] Installed service"
+
+systemctl daemon-reload
+systemctl enable apriltag_detector.service
+systemctl start apriltag_detector.service
+
+echo "[INFO] Started and enabled service"
