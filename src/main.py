@@ -107,7 +107,7 @@ def main():
 
     # Main loop, run all the time like limelight
     while True:
-        tic = time.perf_counter();
+        tic = time.perf_counter()
         data = camera_array.read_cameras()
         detection_poses = detector.getPoses(data)
 
