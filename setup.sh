@@ -13,8 +13,6 @@ echo "[INFO] Created environment for python"
 conda init bash
 conda activate apriltags
 
-pip install opencv-contrib-python
-pip install apriltag
-pip install pynetworktables
+pip install -r requirements.txt
 
 echo "[INFO] Installed dependencies"
